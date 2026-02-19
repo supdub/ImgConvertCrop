@@ -1403,7 +1403,7 @@
         cropCtx.fillRect(x + w, y, Math.max(0, (ox + drawW) - (x + w)), h); // right
 
         cropCtx.strokeStyle = '#0f62fe';
-        cropCtx.lineWidth = 2;
+        cropCtx.lineWidth = isCoarsePointer ? 3 : 2;
         cropCtx.strokeRect(x, y, w, h);
 
         const hs = isCoarsePointer ? 11 : 6;
@@ -1461,9 +1461,15 @@
         const touch = e.touches && e.touches[0];
         const clientX = touch ? touch.clientX : e.clientX;
         const clientY = touch ? touch.clientY : e.clientY;
+
+        // Canvas is often visually scaled down on mobile; convert CSS coords to canvas coords.
+        const cssX = clientX - rect.left;
+        const cssY = clientY - rect.top;
+        const scaleX = rect.width > 0 ? cropCanvas.width / rect.width : 1;
+        const scaleY = rect.height > 0 ? cropCanvas.height / rect.height : 1;
         return {
-          x: clientX - rect.left,
-          y: clientY - rect.top
+          x: cssX * scaleX,
+          y: cssY * scaleY
         };
       }
 
@@ -1487,7 +1493,7 @@
         const y = oy + b.y * s;
         const w = b.w * s;
         const h = b.h * s;
-        const tol = isCoarsePointer ? 24 : 10;
+        const tol = isCoarsePointer ? 32 : 10;
 
         const points = {
           nw: { x, y },
