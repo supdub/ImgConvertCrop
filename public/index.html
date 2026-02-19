@@ -288,6 +288,21 @@
         margin-top: 18px;
       }
 
+      .left-rail-ad {
+        position: fixed;
+        top: 120px;
+        left: 14px;
+        width: 190px;
+        z-index: 20;
+      }
+
+      .left-rail-ad .ad-wrap {
+        margin: 0;
+        padding: 10px;
+        border-radius: 14px;
+        box-shadow: 0 10px 20px rgba(16, 36, 74, 0.12);
+      }
+
       .tool-card {
         margin-top: 12px;
         padding: 14px;
@@ -331,9 +346,25 @@
           grid-template-columns: 1fr;
         }
       }
+
+      @media (max-width: 1300px) {
+        .left-rail-ad {
+          display: none;
+        }
+      }
     </style>
   </head>
   <body>
+    <aside class="left-rail-ad" aria-label="Advertisement">
+      <div class="ad-wrap">
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="ca-pub-4240863320156963"
+             data-ad-slot="3548309138"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+      </div>
+    </aside>
     <main class="page">
       <section class="card">
         <div class="head">
