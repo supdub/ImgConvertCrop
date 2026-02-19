@@ -2,7 +2,7 @@
 
 <p align="center">
   <b>Free, privacy-first image tools in the browser.</b><br/>
-  Convert, crop, and compress images with no server-side image storage.
+  Convert, crop, compress, and AI-upscale images with no server-side image storage.
 </p>
 
 <p align="center">
@@ -26,8 +26,13 @@
   - Optional resize after crop
   - Improved touch ergonomics for mobile and small touch screens
 - **Image Compress**: Reduce file size while keeping pixel dimensions
+- **Image Upscale (AI Enhance, browser-only)**:
+  - ESRGAN-based client-side enhancement
+  - `2x` / `4x` upscale
+  - Restore modes: `Balanced`, `Aggressive`, `Text/Logo`
+  - First run may download model/runtime assets (~31 MB) and then cache in browser
 - **Privacy-first**: Processing happens in-browser, images are not uploaded for processing
-- **Multilingual UI + SEO pages**: `en`, `es`, `zh`, `hi`, `ar`
+- **Multilingual UI + SEO pages**: `en`, `es`, `zh`, `hi`, `ar`, `ja`, `ko`
 - **Open source friendly**: Includes clear route structure and simple deployment model
 
 ## Tech Stack
@@ -74,7 +79,7 @@ PORT=3555 npm start
 
 ## Usage
 
-1. Pick a tool tab: **Convert**, **Crop**, or **Compress**
+1. Pick a tool tab: **Convert**, **Crop**, **Compress**, or **Upscale**
 2. Upload an image
 3. Configure options
 4. Download result
@@ -92,6 +97,8 @@ Supported locales:
 - `zh` (Chinese)
 - `hi` (Hindi)
 - `ar` (Arabic, RTL)
+- `ja` (Japanese)
+- `ko` (Korean)
 
 Routing behavior:
 
@@ -109,12 +116,14 @@ Core tools:
 - `/convert`
 - `/crop`
 - `/compress`
+- `/upscale`
 
 Intent pages:
 
 - Convert: `/convert/png-to-jpg`, `/convert/jpg-to-webp`, `/convert/jpg-to-avif`
 - Crop: `/crop/resize-image`, `/crop/crop-to-square`, `/crop/crop-to-16-9`
 - Compress: `/compress/jpeg`, `/compress/webp`, `/compress/avif`
+- Upscale: `/upscale`
 
 All of the above are also available under locale prefixes, e.g. `/es/convert`, `/ar/crop`.
 
