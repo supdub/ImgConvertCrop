@@ -1406,16 +1406,19 @@
         cropCtx.lineWidth = 2;
         cropCtx.strokeRect(x, y, w, h);
 
-        const hs = isCoarsePointer ? 10 : 6;
+        const hs = isCoarsePointer ? 11 : 6;
         const handles = [
-          [x, y],
-          [x + w, y],
-          [x, y + h],
-          [x + w, y + h]
+          ['nw', x, y],
+          ['ne', x + w, y],
+          ['sw', x, y + h],
+          ['se', x + w, y + h]
         ];
+        if (!cropState.aspectRatio) {
+          handles.push(['n', x + w / 2, y], ['s', x + w / 2, y + h], ['w', x, y + h / 2], ['e', x + w, y + h / 2]);
+        }
         cropCtx.fillStyle = '#ffffff';
         cropCtx.strokeStyle = '#0f62fe';
-        handles.forEach(([hx, hy]) => {
+        handles.forEach(([, hx, hy]) => {
           cropCtx.beginPath();
           cropCtx.rect(hx - hs, hy - hs, hs * 2, hs * 2);
           cropCtx.fill();
@@ -1455,11 +1458,23 @@
 
       function getPointer(e) {
         const rect = cropCanvas.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const touch = e.touches && e.touches[0];
+        const clientX = touch ? touch.clientX : e.clientX;
+        const clientY = touch ? touch.clientY : e.clientY;
         return {
           x: clientX - rect.left,
           y: clientY - rect.top
+        };
+      }
+
+      function canvasToImagePoint(point) {
+        const img = cropState.img;
+        if (!img) return { x: 0, y: 0 };
+        const x = (point.x - cropState.offsetX) / cropState.scale;
+        const y = (point.y - cropState.offsetY) / cropState.scale;
+        return {
+          x: Math.max(0, Math.min(img.width, x)),
+          y: Math.max(0, Math.min(img.height, y))
         };
       }
 
@@ -1472,7 +1487,7 @@
         const y = oy + b.y * s;
         const w = b.w * s;
         const h = b.h * s;
-        const tol = isCoarsePointer ? 18 : 10;
+        const tol = isCoarsePointer ? 24 : 10;
 
         const points = {
           nw: { x, y },
@@ -1480,6 +1495,12 @@
           sw: { x, y: y + h },
           se: { x: x + w, y: y + h }
         };
+        if (!cropState.aspectRatio) {
+          points.n = { x: x + w / 2, y };
+          points.s = { x: x + w / 2, y: y + h };
+          points.w = { x, y: y + h / 2 };
+          points.e = { x: x + w, y: y + h / 2 };
+        }
 
         for (const [name, p] of Object.entries(points)) {
           if (Math.abs(px - p.x) <= tol && Math.abs(py - p.y) <= tol) return name;
@@ -1494,7 +1515,18 @@
         e.preventDefault();
         const p = getPointer(e);
         const hit = hitTestHandle(p.x, p.y);
-        if (!hit) return;
+        if (!hit) {
+          const ip = canvasToImagePoint(p);
+          cropState.mode = 'new';
+          cropState.handle = 'se';
+          cropState.startX = p.x;
+          cropState.startY = p.y;
+          cropState.startBox = { ...cropState.box, startImgX: ip.x, startImgY: ip.y };
+          cropState.box = { x: ip.x, y: ip.y, w: 20, h: 20 };
+          clampBoxToImage();
+          drawCropCanvas();
+          return;
+        }
         cropState.mode = hit === 'move' ? 'move' : 'resize';
         cropState.handle = hit;
         cropState.startX = p.x;
@@ -1511,7 +1543,29 @@
         const b = cropState.box;
         const s = cropState.startBox;
 
-        if (cropState.mode === 'move') {
+        if (cropState.mode === 'new') {
+          const sp = {
+            x: s.startImgX,
+            y: s.startImgY
+          };
+          const ep = canvasToImagePoint(p);
+          const ratio = cropState.aspectRatio;
+          if (!ratio) {
+            b.x = Math.min(sp.x, ep.x);
+            b.y = Math.min(sp.y, ep.y);
+            b.w = Math.max(20, Math.abs(ep.x - sp.x));
+            b.h = Math.max(20, Math.abs(ep.y - sp.y));
+          } else {
+            const rawW = Math.abs(ep.x - sp.x);
+            const rawH = Math.abs(ep.y - sp.y);
+            const targetW = Math.max(20, Math.max(rawW, rawH * ratio));
+            const targetH = targetW / ratio;
+            b.w = targetW;
+            b.h = targetH;
+            b.x = ep.x >= sp.x ? sp.x : sp.x - targetW;
+            b.y = ep.y >= sp.y ? sp.y : sp.y - targetH;
+          }
+        } else if (cropState.mode === 'move') {
           b.x = s.x + dx;
           b.y = s.y + dy;
         } else {
