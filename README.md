@@ -1,4 +1,4 @@
-# Image Convert Lite
+# ImgConvertCrop
 
 Lightweight web application for:
 - Uploading an image
