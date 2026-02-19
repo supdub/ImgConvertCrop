@@ -302,6 +302,7 @@
       .crop-canvas-wrap {
         width: 100%;
         overflow: auto;
+        -webkit-overflow-scrolling: touch;
         border-radius: 10px;
         background: linear-gradient(135deg, #d7e2f5 0%, #e8effd 100%);
         border: 1px solid #cfdbef;
@@ -494,6 +495,26 @@
         .grid {
           grid-template-columns: 1fr;
         }
+
+        .tabs {
+          gap: 10px;
+        }
+
+        .tab-btn {
+          padding: 10px 16px;
+        }
+
+        .crop-shell {
+          padding: 10px;
+        }
+
+        .inline-toggle {
+          padding: 10px 12px;
+        }
+
+        #cropCanvas {
+          touch-action: none;
+        }
       }
 
       @media (max-width: 1300px) {
@@ -656,6 +677,19 @@
               <label for="cropQuality" data-i18n="field.quality">Quality (1-100)</label>
               <input id="cropQuality" type="number" min="1" max="100" value="90" />
             </div>
+            <div>
+              <label for="cropAspectRatio" data-i18n="crop.aspectRatio">Aspect Ratio</label>
+              <select id="cropAspectRatio">
+                <option value="free" data-i18n="crop.ratio.free">Free</option>
+                <option value="1:1">1:1</option>
+                <option value="4:3">4:3</option>
+                <option value="3:4">3:4</option>
+                <option value="16:9">16:9</option>
+                <option value="9:16">9:16</option>
+                <option value="3:2">3:2</option>
+                <option value="2:3">2:3</option>
+              </select>
+            </div>
 
             <div class="full inline-toggle">
               <input id="enableCropResize" type="checkbox" />
@@ -778,6 +812,8 @@
           'btn.confirmCropDownload': 'Confirm Crop and Download',
           'btn.compressDownload': 'Compress and Download',
           'crop.instructions': 'Drag inside the box to move. Drag corners to resize. Use Confirm Crop when ready.',
+          'crop.aspectRatio': 'Aspect Ratio',
+          'crop.ratio.free': 'Free',
           'crop.resizeAfter': 'Resize after crop',
           'crop.resizeExplain':
             'If enabled, the cropped image is scaled down to fit within the width/height you provide. It keeps aspect ratio and will not stretch.',
@@ -830,6 +866,8 @@
           'btn.confirmCropDownload': 'Confirmar recorte y descargar',
           'btn.compressDownload': 'Comprimir y descargar',
           'crop.instructions': 'Arrastra dentro para mover. Arrastra esquinas para cambiar tamano.',
+          'crop.aspectRatio': 'Relacion de aspecto',
+          'crop.ratio.free': 'Libre',
           'crop.resizeAfter': 'Redimensionar despues de recortar',
           'crop.resizeExplain': 'Si lo activas, la imagen recortada se ajusta al ancho/alto indicado sin deformar.',
           'crop.resizeWidth': 'Ancho',
@@ -881,6 +919,8 @@
           'btn.confirmCropDownload': '确认裁剪并下载',
           'btn.compressDownload': '压缩并下载',
           'crop.instructions': '在框内拖动可移动，拖动角点可调整大小。',
+          'crop.aspectRatio': '宽高比',
+          'crop.ratio.free': '自由',
           'crop.resizeAfter': '裁剪后调整尺寸',
           'crop.resizeExplain': '启用后，裁剪结果会按你填写的宽高等比缩小，不会拉伸。',
           'crop.resizeWidth': '宽度',
@@ -932,6 +972,8 @@
           'btn.confirmCropDownload': 'क्रॉप कन्फर्म और डाउनलोड',
           'btn.compressDownload': 'कंप्रेस और डाउनलोड',
           'crop.instructions': 'बॉक्स के अंदर ड्रैग करके मूव करें। कोनों से साइज़ बदलें।',
+          'crop.aspectRatio': 'आस्पेक्ट रेशियो',
+          'crop.ratio.free': 'फ्री',
           'crop.resizeAfter': 'क्रॉप के बाद रिसाइज़',
           'crop.resizeExplain': 'चालू करने पर, क्रॉप की गई इमेज दी गई चौड़ाई/ऊंचाई में बिना खिंचे फिट होगी।',
           'crop.resizeWidth': 'चौड़ाई',
@@ -983,6 +1025,8 @@
           'btn.confirmCropDownload': 'تأكيد القص والتنزيل',
           'btn.compressDownload': 'ضغط وتنزيل',
           'crop.instructions': 'اسحب داخل الإطار للتحريك واسحب الزوايا لتغيير الحجم.',
+          'crop.aspectRatio': 'نسبة الأبعاد',
+          'crop.ratio.free': 'حر',
           'crop.resizeAfter': 'تغيير الحجم بعد القص',
           'crop.resizeExplain': 'عند التفعيل، يتم تصغير الصورة المقصوصة لتناسب العرض/الارتفاع بدون تمدد.',
           'crop.resizeWidth': 'العرض',
@@ -1048,6 +1092,7 @@
       });
 
       const tabButtons = Array.from(document.querySelectorAll('.tab-btn'));
+      const isCoarsePointer = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
       const panels = {
         convert: document.getElementById('panel-convert'),
         crop: document.getElementById('panel-crop'),
@@ -1206,6 +1251,7 @@
 
       const cropState = {
         img: null,
+        aspectRatio: null,
         scale: 1,
         offsetX: 0,
         offsetY: 0,
@@ -1217,25 +1263,65 @@
         startBox: null
       };
 
-      function applyCropPreset(preset) {
-        if (!cropState.img || !preset) return;
-        if (preset !== 'square' && preset !== '16:9') return;
+      function parseAspectRatio(raw) {
+        if (!raw || raw === 'free') return null;
+        const parts = String(raw).split(':');
+        if (parts.length !== 2) return null;
+        const w = Number(parts[0]);
+        const h = Number(parts[1]);
+        if (!Number.isFinite(w) || !Number.isFinite(h) || w <= 0 || h <= 0) return null;
+        return w / h;
+      }
 
-        const img = cropState.img;
-        const ratio = preset === 'square' ? 1 : 16 / 9;
-        let w = img.width * 0.8;
+      function buildDefaultBox(img) {
+        return {
+          x: img.width * 0.1,
+          y: img.height * 0.1,
+          w: img.width * 0.8,
+          h: img.height * 0.8
+        };
+      }
+
+      function buildRatioBox(img, ratio) {
+        const maxW = img.width * 0.9;
+        const maxH = img.height * 0.9;
+        let w = maxW;
         let h = w / ratio;
-        if (h > img.height * 0.8) {
-          h = img.height * 0.8;
+        if (h > maxH) {
+          h = maxH;
           w = h * ratio;
         }
-
-        cropState.box = {
+        return {
           x: (img.width - w) / 2,
           y: (img.height - h) / 2,
           w,
           h
         };
+      }
+
+      function applyCropPreset(preset) {
+        if (!preset) return;
+        const cropAspectRatio = document.getElementById('cropAspectRatio');
+        if (!cropAspectRatio) return;
+        if (preset === 'square') {
+          cropAspectRatio.value = '1:1';
+        } else if (preset === '16:9') {
+          cropAspectRatio.value = '16:9';
+        }
+      }
+
+      function setCropAspectRatio(value, fitToRatio = false) {
+        cropState.aspectRatio = parseAspectRatio(value);
+        if (!cropState.img) return;
+        if (fitToRatio && cropState.aspectRatio) {
+          cropState.box = buildRatioBox(cropState.img, cropState.aspectRatio);
+          clampBoxToImage();
+          drawCropCanvas();
+        } else if (fitToRatio && !cropState.aspectRatio) {
+          cropState.box = buildDefaultBox(cropState.img);
+          clampBoxToImage();
+          drawCropCanvas();
+        }
       }
 
       function drawCropCanvas() {
@@ -1280,7 +1366,7 @@
         cropCtx.lineWidth = 2;
         cropCtx.strokeRect(x, y, w, h);
 
-        const hs = 6;
+        const hs = isCoarsePointer ? 10 : 6;
         const handles = [
           [x, y],
           [x + w, y],
@@ -1301,8 +1387,28 @@
         if (!cropState.img) return;
         const img = cropState.img;
         const b = cropState.box;
-        b.w = Math.max(20, Math.min(b.w, img.width));
-        b.h = Math.max(20, Math.min(b.h, img.height));
+        const ratio = cropState.aspectRatio;
+        if (ratio) {
+          let w = Math.max(20, b.w);
+          let h = w / ratio;
+          if (h < 20) {
+            h = 20;
+            w = h * ratio;
+          }
+          if (w > img.width) {
+            w = img.width;
+            h = w / ratio;
+          }
+          if (h > img.height) {
+            h = img.height;
+            w = h * ratio;
+          }
+          b.w = w;
+          b.h = h;
+        } else {
+          b.w = Math.max(20, Math.min(b.w, img.width));
+          b.h = Math.max(20, Math.min(b.h, img.height));
+        }
         b.x = Math.max(0, Math.min(b.x, img.width - b.w));
         b.y = Math.max(0, Math.min(b.y, img.height - b.h));
       }
@@ -1326,7 +1432,7 @@
         const y = oy + b.y * s;
         const w = b.w * s;
         const h = b.h * s;
-        const tol = 10;
+        const tol = isCoarsePointer ? 18 : 10;
 
         const points = {
           nw: { x, y },
@@ -1369,29 +1475,44 @@
           b.x = s.x + dx;
           b.y = s.y + dy;
         } else {
-          const min = 20;
-          if (cropState.handle.includes('n')) {
-            b.y = s.y + dy;
-            b.h = s.h - dy;
-          }
-          if (cropState.handle.includes('s')) {
-            b.h = s.h + dy;
-          }
-          if (cropState.handle.includes('w')) {
-            b.x = s.x + dx;
-            b.w = s.w - dx;
-          }
-          if (cropState.handle.includes('e')) {
-            b.w = s.w + dx;
-          }
+          const ratio = cropState.aspectRatio;
+          if (!ratio) {
+            const min = 20;
+            if (cropState.handle.includes('n')) {
+              b.y = s.y + dy;
+              b.h = s.h - dy;
+            }
+            if (cropState.handle.includes('s')) {
+              b.h = s.h + dy;
+            }
+            if (cropState.handle.includes('w')) {
+              b.x = s.x + dx;
+              b.w = s.w - dx;
+            }
+            if (cropState.handle.includes('e')) {
+              b.w = s.w + dx;
+            }
 
-          if (b.w < min) {
-            b.w = min;
-            if (cropState.handle.includes('w')) b.x = s.x + (s.w - min);
-          }
-          if (b.h < min) {
-            b.h = min;
-            if (cropState.handle.includes('n')) b.y = s.y + (s.h - min);
+            if (b.w < min) {
+              b.w = min;
+              if (cropState.handle.includes('w')) b.x = s.x + (s.w - min);
+            }
+            if (b.h < min) {
+              b.h = min;
+              if (cropState.handle.includes('n')) b.y = s.y + (s.h - min);
+            }
+          } else {
+            const horizontalDelta = cropState.handle.includes('e') ? dx : -dx;
+            const verticalDelta = cropState.handle.includes('s') ? dy : -dy;
+            const useHorizontal = Math.abs(horizontalDelta) >= Math.abs(verticalDelta * ratio);
+            const nextW = useHorizontal ? s.w + horizontalDelta : s.w + verticalDelta * ratio;
+            const targetW = Math.max(20, nextW);
+            const targetH = targetW / ratio;
+
+            b.w = targetW;
+            b.h = targetH;
+            b.x = cropState.handle.includes('w') ? s.x + (s.w - targetW) : s.x;
+            b.y = cropState.handle.includes('n') ? s.y + (s.h - targetH) : s.y;
           }
         }
 
@@ -1412,18 +1533,19 @@
       window.addEventListener('touchmove', onCropMove, { passive: false });
       window.addEventListener('touchend', onCropUp, { passive: false });
 
+      const cropAspectRatio = document.getElementById('cropAspectRatio');
+      cropAspectRatio.addEventListener('change', () => {
+        setCropAspectRatio(cropAspectRatio.value, true);
+      });
+      applyCropPreset(pageConfig.cropPreset);
+      setCropAspectRatio(cropAspectRatio.value, false);
+
       cropImageInput.addEventListener('change', async () => {
         if (!cropImageInput.files || cropImageInput.files.length === 0) return;
         try {
           const img = await fileToImage(cropImageInput.files[0]);
           cropState.img = img;
-          cropState.box = {
-            x: img.width * 0.1,
-            y: img.height * 0.1,
-            w: img.width * 0.8,
-            h: img.height * 0.8
-          };
-          applyCropPreset(pageConfig.cropPreset);
+          cropState.box = cropState.aspectRatio ? buildRatioBox(img, cropState.aspectRatio) : buildDefaultBox(img);
           clampBoxToImage();
           drawCropCanvas();
           setStatus(cropStatus, t('status.imageLoaded'), 'ok');
@@ -1435,12 +1557,8 @@
       document.getElementById('resetCropBtn').addEventListener('click', () => {
         if (!cropState.img) return;
         const img = cropState.img;
-        cropState.box = {
-          x: img.width * 0.1,
-          y: img.height * 0.1,
-          w: img.width * 0.8,
-          h: img.height * 0.8
-        };
+        cropState.box = cropState.aspectRatio ? buildRatioBox(img, cropState.aspectRatio) : buildDefaultBox(img);
+        clampBoxToImage();
         drawCropCanvas();
         setStatus(cropStatus, t('status.cropReset'), 'ok');
       });

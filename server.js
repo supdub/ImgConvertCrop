@@ -43,6 +43,221 @@ const localeMeta = {
   ar: { name: 'العربية', htmlLang: 'ar', dir: 'rtl' }
 };
 
+const copyTranslations = {
+  es: {
+    'ImgConvertCrop.com | Convert, Crop, Compress Images Free': 'ImgConvertCrop.com | Convertir, Recortar y Comprimir Imagenes Gratis',
+    'Free online image converter, cropper, and compressor. Runs in browser with privacy-first processing.':
+      'Convertidor, recortador y compresor de imagenes gratis. Funciona en el navegador con privacidad primero.',
+    'Convert image formats, crop precisely, and compress online for free. Fast in-browser processing, and we never save your images.':
+      'Convierte formatos de imagen, recorta con precision y comprime en linea gratis. Rapido en navegador y nunca guardamos tus imagenes.',
+    'Free Online Image Converter, Cropper, and Compressor': 'Convertidor, recortador y compresor de imagenes gratis en linea',
+    'ImgConvertCrop helps you convert image formats, crop with precision, and reduce file size in seconds.':
+      'ImgConvertCrop te ayuda a convertir formatos, recortar con precision y reducir el tamano en segundos.',
+    'Everything runs in your browser for speed and privacy. We never save your images.':
+      'Todo se ejecuta en tu navegador para velocidad y privacidad. Nunca guardamos tus imagenes.',
+    'Convert to JPEG, PNG, WEBP, and AVIF': 'Convierte a JPEG, PNG, WEBP y AVIF',
+    'Modern interactive crop with optional resize': 'Recorte interactivo moderno con cambio de tamano opcional',
+    'Compress image files while keeping dimensions': 'Comprime imagenes manteniendo las dimensiones',
+    'Free Image Converter': 'Convertidor de imagenes gratis',
+    'Convert JPG, PNG, WEBP, and AVIF in seconds. Privacy-first, browser-based processing.':
+      'Convierte JPG, PNG, WEBP y AVIF en segundos. Procesamiento en el navegador con privacidad primero.',
+    'Convert Images Between Popular Formats': 'Convierte imagenes entre formatos populares',
+    'Use this tool to convert image files without installing software.':
+      'Usa esta herramienta para convertir imagenes sin instalar software.',
+    'Choose output format and quality, then download instantly.':
+      'Elige formato y calidad de salida, luego descarga al instante.',
+    'JPG to WEBP converter': 'Convertidor de JPG a WEBP',
+    'PNG to JPG converter': 'Convertidor de PNG a JPG',
+    'JPG to AVIF converter': 'Convertidor de JPG a AVIF',
+    'JPG to WEBP Converter Online Free': 'Convertidor JPG a WEBP en linea gratis',
+    'JPG to WEBP Converter': 'Convertidor JPG a WEBP',
+    'Convert JPG to WEBP online for smaller image files and better web performance. No server upload required.':
+      'Convierte JPG a WEBP en linea para archivos mas pequenos y mejor rendimiento web. No se requiere subir al servidor.',
+    'Turn JPEG images into WEBP to cut file size for websites and apps.':
+      'Convierte imagenes JPEG a WEBP para reducir tamano en sitios web y apps.',
+    'Convert JPG to WEBP for Better Compression': 'Convierte JPG a WEBP para mejor compresion',
+    'WEBP usually provides smaller files than JPG at similar visual quality.':
+      'WEBP normalmente ofrece archivos mas pequenos que JPG con una calidad visual similar.',
+    'Choose quality level and download your WEBP image instantly.':
+      'Elige el nivel de calidad y descarga tu imagen WEBP al instante.',
+    'Fast in-browser processing': 'Procesamiento rapido en el navegador',
+    'No image upload to server': 'Sin subida de imagen al servidor',
+    'Quality control supported': 'Control de calidad disponible',
+    'Popular Search Terms in the United States': 'Terminos de busqueda populares en espanol',
+    'Common queries include "image converter online free", "crop image online no watermark", and "compress image online free".':
+      'Busquedas comunes en espanol incluyen "convertidor de imagenes online gratis", "recortar imagen online sin marca de agua" y "comprimir imagen online gratis".',
+    'Image Converter Online': 'Convertidor de imagenes en linea',
+    'PNG to JPG Converter': 'Convertidor PNG a JPG',
+    'JPG to AVIF Converter': 'Convertidor JPG a AVIF',
+    'US-focused intent terms: "image converter online free", "png to jpg online free", "jpg to webp converter", "jpg to avif online".':
+      'Terminos de intencion en espanol: "convertidor de imagenes online gratis", "png a jpg online gratis", "jpg a webp", "jpg a avif online".',
+    'US-focused intent terms: "crop image online free", "crop image no watermark", "crop to square", "crop image to 16:9".':
+      'Terminos de intencion en espanol: "recortar imagen online gratis", "recortar imagen sin marca de agua", "recortar a cuadrado", "recortar imagen a 16:9".',
+    'US-focused intent terms: "compress image online free", "jpeg compressor online", "compress webp", "compress avif image".':
+      'Terminos de intencion en espanol: "comprimir imagen online gratis", "compresor jpeg online", "comprimir webp", "comprimir imagen avif".',
+    'Related pages': 'Paginas relacionadas'
+  },
+  zh: {
+    'ImgConvertCrop.com | Convert, Crop, Compress Images Free': 'ImgConvertCrop.com | 免费图片转换、裁剪、压缩',
+    'Free online image converter, cropper, and compressor. Runs in browser with privacy-first processing.':
+      '免费在线图片转换、裁剪与压缩。浏览器内处理，隐私优先。',
+    'Convert image formats, crop precisely, and compress online for free. Fast in-browser processing, and we never save your images.':
+      '免费在线转换图片格式、精准裁剪与压缩。浏览器内快速处理，我们不会保存你的图片。',
+    'Free Online Image Converter, Cropper, and Compressor': '免费在线图片转换、裁剪与压缩',
+    'ImgConvertCrop helps you convert image formats, crop with precision, and reduce file size in seconds.':
+      'ImgConvertCrop 帮你快速完成格式转换、精准裁剪，并在几秒内减小文件体积。',
+    'Everything runs in your browser for speed and privacy. We never save your images.':
+      '所有处理都在你的浏览器中完成，兼顾速度与隐私。我们不会保存你的图片。',
+    'Convert to JPEG, PNG, WEBP, and AVIF': '支持转换为 JPEG、PNG、WEBP、AVIF',
+    'Modern interactive crop with optional resize': '现代交互式裁剪，支持可选调整尺寸',
+    'Compress image files while keeping dimensions': '在保持尺寸不变的情况下压缩图片',
+    'Free Image Converter': '免费图片转换器',
+    'Convert JPG, PNG, WEBP, and AVIF in seconds. Privacy-first, browser-based processing.':
+      '几秒内完成 JPG、PNG、WEBP、AVIF 转换。浏览器内处理，隐私优先。',
+    'Convert Images Between Popular Formats': '在常见图片格式之间转换',
+    'Use this tool to convert image files without installing software.':
+      '使用此工具可在不安装软件的情况下转换图片文件。',
+    'Choose output format and quality, then download instantly.':
+      '选择输出格式和质量后即可立即下载。',
+    'JPG to WEBP converter': 'JPG 转 WEBP 转换',
+    'PNG to JPG converter': 'PNG 转 JPG 转换',
+    'JPG to AVIF converter': 'JPG 转 AVIF 转换',
+    'JPG to WEBP Converter Online Free': 'JPG 转 WEBP 在线免费',
+    'JPG to WEBP Converter': 'JPG 转 WEBP 转换器',
+    'Convert JPG to WEBP online for smaller image files and better web performance. No server upload required.':
+      '在线将 JPG 转为 WEBP，可获得更小文件并提升网页性能。无需上传到服务器。',
+    'Turn JPEG images into WEBP to cut file size for websites and apps.':
+      '将 JPEG 图片转换为 WEBP，以减少网站和应用中的文件大小。',
+    'Convert JPG to WEBP for Better Compression': '将 JPG 转为 WEBP 以获得更高压缩率',
+    'WEBP usually provides smaller files than JPG at similar visual quality.':
+      '在相近画质下，WEBP 通常比 JPG 文件更小。',
+    'Choose quality level and download your WEBP image instantly.':
+      '选择质量等级后即可立即下载 WEBP 图片。',
+    'Fast in-browser processing': '浏览器内快速处理',
+    'No image upload to server': '无需上传图片到服务器',
+    'Quality control supported': '支持质量控制',
+    'Popular Search Terms in the United States': '中文热门搜索词',
+    'Common queries include "image converter online free", "crop image online no watermark", and "compress image online free".':
+      '常见中文搜索包括“图片在线转换免费”、“在线裁剪图片 无水印”、“在线压缩图片 免费”。',
+    'Image Converter Online': '在线图片转换器',
+    'PNG to JPG Converter': 'PNG 转 JPG 转换器',
+    'JPG to AVIF Converter': 'JPG 转 AVIF 转换器',
+    'US-focused intent terms: "image converter online free", "png to jpg online free", "jpg to webp converter", "jpg to avif online".':
+      '中文常见搜索词："图片在线转换免费"、"png转jpg 在线"、"jpg转webp"、"jpg转avif 在线"。',
+    'US-focused intent terms: "crop image online free", "crop image no watermark", "crop to square", "crop image to 16:9".':
+      '中文常见搜索词："在线裁剪图片 免费"、"裁剪图片 无水印"、"图片裁剪成正方形"、"图片裁剪 16:9"。',
+    'US-focused intent terms: "compress image online free", "jpeg compressor online", "compress webp", "compress avif image".':
+      '中文常见搜索词："在线压缩图片 免费"、"jpeg压缩 在线"、"压缩webp"、"压缩avif图片"。',
+    'Related pages': '相关页面'
+  },
+  hi: {
+    'ImgConvertCrop.com | Convert, Crop, Compress Images Free': 'ImgConvertCrop.com | मुफ्त इमेज कन्वर्ट, क्रॉप और कंप्रेस',
+    'Free online image converter, cropper, and compressor. Runs in browser with privacy-first processing.':
+      'मुफ्त ऑनलाइन इमेज कन्वर्टर, क्रॉपर और कंप्रेसर। ब्राउज़र में चलता है और गोपनीयता प्राथमिक है।',
+    'Convert image formats, crop precisely, and compress online for free. Fast in-browser processing, and we never save your images.':
+      'इमेज फॉर्मेट बदलें, सटीक क्रॉप करें और मुफ्त में ऑनलाइन कंप्रेस करें। सब कुछ ब्राउज़र में तेज़ी से होता है और हम आपकी इमेज सेव नहीं करते।',
+    'Free Online Image Converter, Cropper, and Compressor': 'मुफ्त ऑनलाइन इमेज कन्वर्टर, क्रॉपर और कंप्रेसर',
+    'ImgConvertCrop helps you convert image formats, crop with precision, and reduce file size in seconds.':
+      'ImgConvertCrop आपको इमेज फॉर्मेट बदलने, सटीक क्रॉप करने और सेकंडों में फाइल साइज़ घटाने में मदद करता है।',
+    'Everything runs in your browser for speed and privacy. We never save your images.':
+      'सब कुछ आपके ब्राउज़र में चलता है, जिससे गति और गोपनीयता दोनों मिलती हैं। हम आपकी इमेज सेव नहीं करते।',
+    'Convert to JPEG, PNG, WEBP, and AVIF': 'JPEG, PNG, WEBP और AVIF में कन्वर्ट करें',
+    'Modern interactive crop with optional resize': 'वैकल्पिक रिसाइज़ के साथ आधुनिक इंटरएक्टिव क्रॉप',
+    'Compress image files while keeping dimensions': 'डायमेंशन बनाए रखते हुए इमेज फाइल कंप्रेस करें',
+    'Free Image Converter': 'मुफ्त इमेज कन्वर्टर',
+    'Convert JPG, PNG, WEBP, and AVIF in seconds. Privacy-first, browser-based processing.':
+      'JPG, PNG, WEBP और AVIF को सेकंडों में कन्वर्ट करें। गोपनीयता-प्राथमिक, ब्राउज़र-आधारित प्रोसेसिंग।',
+    'Convert Images Between Popular Formats': 'लोकप्रिय फॉर्मेट्स के बीच इमेज कन्वर्ट करें',
+    'Use this tool to convert image files without installing software.':
+      'बिना सॉफ्टवेयर इंस्टॉल किए इमेज फाइल कन्वर्ट करने के लिए इस टूल का उपयोग करें।',
+    'Choose output format and quality, then download instantly.':
+      'आउटपुट फॉर्मेट और क्वालिटी चुनें, फिर तुरंत डाउनलोड करें।',
+    'JPG to WEBP converter': 'JPG से WEBP कन्वर्टर',
+    'PNG to JPG converter': 'PNG से JPG कन्वर्टर',
+    'JPG to AVIF converter': 'JPG से AVIF कन्वर्टर',
+    'JPG to WEBP Converter Online Free': 'JPG से WEBP कन्वर्टर ऑनलाइन फ्री',
+    'JPG to WEBP Converter': 'JPG से WEBP कन्वर्टर',
+    'Convert JPG to WEBP online for smaller image files and better web performance. No server upload required.':
+      'छोटी इमेज फाइल और बेहतर वेब परफॉर्मेंस के लिए JPG को WEBP में ऑनलाइन बदलें। सर्वर अपलोड की जरूरत नहीं।',
+    'Turn JPEG images into WEBP to cut file size for websites and apps.':
+      'वेबसाइट और ऐप के लिए फाइल साइज़ घटाने हेतु JPEG को WEBP में बदलें।',
+    'Convert JPG to WEBP for Better Compression': 'बेहतर कंप्रेशन के लिए JPG को WEBP में बदलें',
+    'WEBP usually provides smaller files than JPG at similar visual quality.':
+      'एक जैसी दृश्य गुणवत्ता पर WEBP आमतौर पर JPG से छोटी फाइल देता है।',
+    'Choose quality level and download your WEBP image instantly.':
+      'क्वालिटी लेवल चुनें और अपनी WEBP इमेज तुरंत डाउनलोड करें।',
+    'Fast in-browser processing': 'ब्राउज़र में तेज प्रोसेसिंग',
+    'No image upload to server': 'इमेज सर्वर पर अपलोड नहीं होती',
+    'Quality control supported': 'क्वालिटी कंट्रोल उपलब्ध',
+    'Popular Search Terms in the United States': 'हिंदी में लोकप्रिय खोज शब्द',
+    'Common queries include "image converter online free", "crop image online no watermark", and "compress image online free".':
+      'आम हिंदी खोजों में "इमेज कन्वर्टर ऑनलाइन फ्री", "इमेज क्रॉप ऑनलाइन बिना वॉटरमार्क", और "इमेज कंप्रेस ऑनलाइन फ्री" शामिल हैं।',
+    'Image Converter Online': 'इमेज कन्वर्टर ऑनलाइन',
+    'PNG to JPG Converter': 'PNG से JPG कन्वर्टर',
+    'JPG to AVIF Converter': 'JPG से AVIF कन्वर्टर',
+    'US-focused intent terms: "image converter online free", "png to jpg online free", "jpg to webp converter", "jpg to avif online".':
+      'हिंदी सर्च इंटेंट शब्द: "इमेज कन्वर्टर ऑनलाइन फ्री", "png से jpg ऑनलाइन", "jpg से webp", "jpg से avif ऑनलाइन"।',
+    'US-focused intent terms: "crop image online free", "crop image no watermark", "crop to square", "crop image to 16:9".':
+      'हिंदी सर्च इंटेंट शब्द: "इमेज क्रॉप ऑनलाइन फ्री", "क्रॉप इमेज बिना वॉटरमार्क", "स्क्वेयर में क्रॉप", "इमेज 16:9 में क्रॉप"।',
+    'US-focused intent terms: "compress image online free", "jpeg compressor online", "compress webp", "compress avif image".':
+      'हिंदी सर्च इंटेंट शब्द: "इमेज कंप्रेस ऑनलाइन फ्री", "jpeg कंप्रेसर ऑनलाइन", "webp कंप्रेस", "avif इमेज कंप्रेस"।',
+    'Related pages': 'संबंधित पेज'
+  },
+  ar: {
+    'ImgConvertCrop.com | Convert, Crop, Compress Images Free': 'ImgConvertCrop.com | تحويل وقص وضغط الصور مجانا',
+    'Free online image converter, cropper, and compressor. Runs in browser with privacy-first processing.':
+      'محول وقاص وضاغط صور مجاني عبر الإنترنت. يعمل داخل المتصفح مع أولوية للخصوصية.',
+    'Convert image formats, crop precisely, and compress online for free. Fast in-browser processing, and we never save your images.':
+      'حوّل صيغ الصور واقصها بدقة واضغطها مجانا عبر الإنترنت. معالجة سريعة داخل المتصفح ونحن لا نحفظ صورك.',
+    'Free Online Image Converter, Cropper, and Compressor': 'محول وقاص وضاغط صور مجاني عبر الإنترنت',
+    'ImgConvertCrop helps you convert image formats, crop with precision, and reduce file size in seconds.':
+      'يساعدك ImgConvertCrop على تحويل صيغ الصور والقص بدقة وتقليل حجم الملف خلال ثوانٍ.',
+    'Everything runs in your browser for speed and privacy. We never save your images.':
+      'كل شيء يعمل في متصفحك لسرعة أكبر وخصوصية أفضل. نحن لا نحفظ صورك.',
+    'Convert to JPEG, PNG, WEBP, and AVIF': 'تحويل إلى JPEG وPNG وWEBP وAVIF',
+    'Modern interactive crop with optional resize': 'قص تفاعلي حديث مع تغيير حجم اختياري',
+    'Compress image files while keeping dimensions': 'ضغط ملفات الصور مع الحفاظ على الأبعاد',
+    'Free Image Converter': 'محول صور مجاني',
+    'Convert JPG, PNG, WEBP, and AVIF in seconds. Privacy-first, browser-based processing.':
+      'حوّل JPG وPNG وWEBP وAVIF خلال ثوانٍ. معالجة داخل المتصفح مع أولوية للخصوصية.',
+    'Convert Images Between Popular Formats': 'حوّل الصور بين الصيغ الشائعة',
+    'Use this tool to convert image files without installing software.':
+      'استخدم هذه الأداة لتحويل ملفات الصور دون تثبيت برامج.',
+    'Choose output format and quality, then download instantly.':
+      'اختر صيغة الإخراج والجودة ثم نزّل فورًا.',
+    'JPG to WEBP converter': 'محول JPG إلى WEBP',
+    'PNG to JPG converter': 'محول PNG إلى JPG',
+    'JPG to AVIF converter': 'محول JPG إلى AVIF',
+    'JPG to WEBP Converter Online Free': 'محول JPG إلى WEBP مجانا عبر الإنترنت',
+    'JPG to WEBP Converter': 'محول JPG إلى WEBP',
+    'Convert JPG to WEBP online for smaller image files and better web performance. No server upload required.':
+      'حوّل JPG إلى WEBP عبر الإنترنت للحصول على ملفات أصغر وأداء ويب أفضل. لا يلزم الرفع إلى الخادم.',
+    'Turn JPEG images into WEBP to cut file size for websites and apps.':
+      'حوّل صور JPEG إلى WEBP لتقليل حجم الملفات للمواقع والتطبيقات.',
+    'Convert JPG to WEBP for Better Compression': 'حوّل JPG إلى WEBP لضغط أفضل',
+    'WEBP usually provides smaller files than JPG at similar visual quality.':
+      'عادة ما يوفر WEBP ملفات أصغر من JPG عند جودة مرئية متقاربة.',
+    'Choose quality level and download your WEBP image instantly.':
+      'اختر مستوى الجودة ثم نزّل صورة WEBP فورا.',
+    'Fast in-browser processing': 'معالجة سريعة داخل المتصفح',
+    'No image upload to server': 'بدون رفع الصورة إلى الخادم',
+    'Quality control supported': 'يدعم التحكم في الجودة',
+    'Popular Search Terms in the United States': 'مصطلحات البحث الشائعة بالعربية',
+    'Common queries include "image converter online free", "crop image online no watermark", and "compress image online free".':
+      'تشمل عمليات البحث العربية الشائعة "تحويل الصور اونلاين مجانا" و"قص الصور اونلاين بدون علامة مائية" و"ضغط الصور اونلاين مجانا".',
+    'Image Converter Online': 'محول الصور عبر الإنترنت',
+    'PNG to JPG Converter': 'محول PNG إلى JPG',
+    'JPG to AVIF Converter': 'محول JPG إلى AVIF',
+    'US-focused intent terms: "image converter online free", "png to jpg online free", "jpg to webp converter", "jpg to avif online".':
+      'مصطلحات نية البحث بالعربية: "تحويل الصور اونلاين مجانا" و"png الى jpg اونلاين" و"jpg الى webp" و"jpg الى avif اونلاين".',
+    'US-focused intent terms: "crop image online free", "crop image no watermark", "crop to square", "crop image to 16:9".':
+      'مصطلحات نية البحث بالعربية: "قص الصور اونلاين مجانا" و"قص الصور بدون علامة مائية" و"قص الصورة مربع" و"قص الصورة 16:9".',
+    'US-focused intent terms: "compress image online free", "jpeg compressor online", "compress webp", "compress avif image".':
+      'مصطلحات نية البحث بالعربية: "ضغط الصور اونلاين مجانا" و"jpeg compressor online" و"ضغط webp" و"ضغط صورة avif".',
+    'Related pages': 'صفحات ذات صلة'
+  }
+};
+
 const toolInternalLinks = {
   convert: [
     { href: '/convert', label: 'Image Converter Online' },
@@ -274,6 +489,42 @@ function escapeHtml(text) {
     .replace(/"/g, '&quot;');
 }
 
+function translateText(locale, text) {
+  if (!text || locale === 'en') return text;
+  return (copyTranslations[locale] && copyTranslations[locale][text]) || text;
+}
+
+function localizeSeoConfig(config, locale) {
+  if (locale === 'en') return config;
+  const localized = { ...config };
+  const keys = [
+    'title',
+    'description',
+    'canonicalPath',
+    'ogTitle',
+    'ogDescription',
+    'twitterTitle',
+    'twitterDescription',
+    'heroTitle',
+    'heroSubtitle',
+    'seoH2',
+    'seoP1',
+    'seoP2',
+    'seoLi1',
+    'seoLi2',
+    'seoLi3',
+    'keywordTitle',
+    'keywordText'
+  ];
+  keys.forEach((key) => {
+    if (key === 'canonicalPath') return;
+    if (typeof localized[key] === 'string') {
+      localized[key] = translateText(locale, localized[key]);
+    }
+  });
+  return localized;
+}
+
 function parseCookies(cookieHeader) {
   if (!cookieHeader) return {};
   return cookieHeader.split(';').reduce((acc, item) => {
@@ -337,7 +588,7 @@ function buildRelatedLinksHtml(pathname, activeTab, locale) {
   const links = toolInternalLinks[activeTab] || [];
   const filtered = links.filter((item) => item.href !== pathname);
   return filtered
-    .map((item) => `<li><a href="${toLocalizedPath(locale, item.href)}">${escapeHtml(item.label)}</a></li>`)
+    .map((item) => `<li><a href="${toLocalizedPath(locale, item.href)}">${escapeHtml(translateText(locale, item.label))}</a></li>`)
     .join('');
 }
 
@@ -364,10 +615,11 @@ function buildLocaleOptionsHtml(locale) {
 }
 
 function renderPage(pathname, locale) {
-  const config = { ...defaultSeo, ...(pages[pathname] || {}) };
+  const config = localizeSeoConfig({ ...defaultSeo, ...(pages[pathname] || {}) }, locale);
   const canonicalPath = toLocalizedPath(locale, config.canonicalPath);
   const canonical = `https://imgconvertcrop.com${canonicalPath}`;
-  const keywordText = config.keywordText || toolKeywordCopy[config.activeTab] || defaultSeo.keywordText;
+  const keywordText =
+    config.keywordText || translateText(locale, toolKeywordCopy[config.activeTab]) || translateText(locale, defaultSeo.keywordText);
   const relatedLinksHtml = buildRelatedLinksHtml(pathname, config.activeTab, locale);
   const tabClasses = {
     convertBtn: config.activeTab === 'convert' ? 'active' : '',
