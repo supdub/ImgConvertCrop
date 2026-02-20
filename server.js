@@ -743,6 +743,20 @@ app.get('/health', (_req, res) => {
   res.json({ ok: true });
 });
 
+app.get('/editor', (_req, res) => {
+  res.type('html').sendFile(path.join(publicDir, 'editor.html'));
+});
+
+app.get('/:locale/editor', (req, res, next) => {
+  const locale = normalizeLocale(req.params.locale);
+  if (!locale) {
+    next();
+    return;
+  }
+  res.setHeader('Set-Cookie', `lang=${locale}; Path=/; Max-Age=31536000; SameSite=Lax`);
+  res.type('html').sendFile(path.join(publicDir, 'editor.html'));
+});
+
 app.get('*', (req, res, next) => {
   if (req.path.length > 1 && req.path.endsWith('/') && req.path !== '/') {
     const normalized = req.path.replace(/\/+$/, '');

@@ -1,4 +1,4 @@
-# ImgConvertCrop
+# ImgConvertCrop (V1 + V2)
 
 <p align="center">
   <b>Free, privacy-first image tools in the browser.</b><br/>
@@ -19,6 +19,17 @@
 
 ## Features
 
+- **V1 (existing multi-page experience)**:
+  - Convert, Crop, Compress, Upscale, AI Remove
+  - SEO/localized routes remain unchanged
+  - Rich per-tool UI blocks and parameter freedom
+- **V2 (new editor shell)**:
+  - Route: `/editor` (also `/:locale/editor`)
+  - Single-page editing flow: upload once, switch tools without reload
+  - Tools in V2: Crop + AI Remove
+  - Top bar: Back (reset session) + Save
+  - Bottom tabs: Crop / Remove
+  - Save overlay exports: PNG, JPG (quality 60-100, default 92), WebP (quality 60-100, default 90)
 - **Image Convert**: `jpeg`, `png`, `webp`, `avif`
 - **Image Crop**:
   - Drag-and-resize crop box
@@ -31,10 +42,10 @@
   - `2x` / `4x` upscale
   - Restore modes: `Balanced`, `Aggressive`, `Text/Logo`
   - First run may download model/runtime assets (~31 MB) and then cache in browser
-- **AI Object Remove (browser-only)**:
+- **AI Object Remove**:
   - Brush-based painting workflow with zoom and multi-step undo
-  - Algorithms: `AI Generative`, `Aggressive`, `Texture Preserve`, `Natural`
-  - AI mode is quality-first (slower), optimized for cleaner generated fill
+  - Shared frontend API contract for backend integration: `POST /api/remove` (`image`, `mask`, `params`)
+  - If backend is unavailable, V2 uses a mock removal pipeline fallback
   - Download is enabled after removal finishes
 - **Privacy-first**: Processing happens in-browser, images are not uploaded for processing
 - **Multilingual UI + SEO pages**: `en`, `es`, `zh`, `hi`, `ar`, `ja`, `ko`
@@ -51,12 +62,23 @@
 ```text
 .
 ├── public/
-│   ├── index.html        # Main UI + client logic
+│   ├── index.html        # V1 shell + existing tool pages/UI
+│   ├── editor.html       # V2 single-page editor shell
+│   ├── js/
+│   │   ├── v2-editor.js  # V2 shell state + interactions
+│   │   ├── core/
+│   │   │   ├── image-core.js       # Shared image IO/crop/export/size estimate
+│   │   │   ├── transform-core.js   # Shared transform/viewport math helpers
+│   │   │   ├── canvas-renderer.js  # Shared editor canvas compositing
+│   │   │   └── remove-api.js       # Shared remove API contract + mock fallback
+│   │   └── tools/
+│   │       ├── tool-crop.js        # Shared crop tool logic API
+│   │       └── tool-remove.js      # Shared remove stroke/mask logic API
 │   ├── ads.txt           # AdSense ads.txt
 │   ├── robots.txt
 │   ├── sitemap.xml
 │   └── llms.txt
-├── server.js             # Express server + SEO/localized routing
+├── server.js             # Express server + V1 localized routing + /editor entry
 ├── package.json
 └── Dockerfile
 ```
@@ -75,6 +97,8 @@ npm start
 ```
 
 Open: `http://localhost:3444`
+
+V2 editor: `http://localhost:3444/editor`
 
 If `3444` is busy:
 
@@ -99,6 +123,17 @@ For object removal:
 ## API
 
 - `GET /health` → `{"ok":true}`
+- `POST /api/remove` (optional backend integration for remove tool):
+  - `multipart/form-data`
+  - `image`: image blob/file
+  - `mask`: PNG mask blob (`white = remove`, `black = keep`)
+  - `params`: JSON string (optional)
+  - response: either image blob or JSON containing `url`
+
+Current behavior:
+
+- V2 uses `public/js/core/remove-api.js` for this contract.
+- If `/api/remove` is not available or fails, V2 automatically falls back to a frontend mock so the flow remains functional.
 
 ## Localization & SEO Routing
 
@@ -130,6 +165,7 @@ Core tools:
 - `/compress`
 - `/upscale`
 - `/remove`
+- `/editor` (V2)
 
 Intent pages:
 

@@ -1,0 +1,840 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>ImgConvertCrop Editor V2</title>
+    <style>
+      :root {
+        --top-h: 56px;
+        --tabs-h: 74px;
+        --tool-h: 146px;
+        --control-h: 44px;
+        --bg-base: #f5f6f8;
+        --bg-stage: #eef1f4;
+        --surface-solid: #ffffff;
+        --surface-soft: #f8f9fb;
+        --surface-tonal: #f1f4f8;
+        --surface-glass: rgba(255, 255, 255, 0.78);
+        --text-primary: #111318;
+        --text-secondary: #5d6470;
+        --text-tertiary: #8b93a1;
+        --separator: rgba(17, 19, 24, 0.1);
+        --separator-strong: rgba(17, 19, 24, 0.16);
+        --accent: #0a84ff;
+        --accent-soft: #e7f2ff;
+        --accent-ink: #056ad1;
+        --danger: #ff3b30;
+        --disabled-bg: #eef0f3;
+        --disabled-text: #a2a9b5;
+        --shadow-sm: 0 1px 2px rgba(17, 19, 24, 0.06);
+        --shadow-md: 0 10px 28px rgba(17, 19, 24, 0.08);
+        --radius-sm: 10px;
+        --radius-md: 14px;
+        --radius-lg: 18px;
+        --radius-pill: 22px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: radial-gradient(120% 120% at 50% 0%, #fcfdff 0%, #f3f5f8 58%, #eaedf1 100%);
+        color: var(--text-primary);
+        font-family:
+          'SF Pro Text',
+          'SF Pro Display',
+          'Plus Jakarta Sans',
+          'Avenir Next',
+          'Segoe UI',
+          sans-serif;
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      .glass {
+        background: var(--surface-glass);
+        border: 1px solid rgba(255, 255, 255, 0.62);
+        -webkit-backdrop-filter: saturate(180%) blur(18px);
+        backdrop-filter: saturate(180%) blur(18px);
+      }
+
+      @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+        .glass {
+          background: rgba(255, 255, 255, 0.97);
+        }
+      }
+
+      .topbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: calc(var(--top-h) + env(safe-area-inset-top));
+        background: transparent;
+        border-bottom: 1px solid var(--separator);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: max(env(safe-area-inset-top), 0px) 10px 0;
+        z-index: 40;
+      }
+
+      .topbar button {
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--text-secondary);
+        min-width: 44px;
+        height: 44px;
+        padding: 0 12px;
+        border-radius: var(--radius-pill);
+        font-size: 16px;
+        font-weight: 600;
+        transition: background-color 150ms ease, color 150ms ease;
+      }
+
+      .topbar button:active {
+        background: rgba(17, 19, 24, 0.08);
+      }
+
+      #saveBtn {
+        color: var(--accent-ink);
+      }
+
+      .topbar button:disabled {
+        color: var(--text-tertiary);
+      }
+
+      #topLabel {
+        font-size: 20px;
+        line-height: 28px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: #2b3442;
+      }
+
+      .stage {
+        position: fixed;
+        top: calc(var(--top-h) + env(safe-area-inset-top));
+        left: 0;
+        right: 0;
+        bottom: calc(var(--tabs-h) + var(--tool-h));
+        background: #ffffff;
+        padding: 12px 16px;
+      }
+
+      .canvas-shell {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        border-radius: 16px;
+        border: 1px solid rgba(17, 19, 24, 0.08);
+        background: #ffffff;
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.8),
+          0 14px 28px rgba(17, 19, 24, 0.08);
+        overflow: hidden;
+      }
+
+      .canvas-shell.busy {
+        box-shadow:
+          0 0 0 1px rgba(10, 132, 255, 0.28),
+          0 0 0 6px rgba(10, 132, 255, 0.12),
+          0 6px 18px rgba(10, 132, 255, 0.2);
+      }
+
+      #editorCanvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        touch-action: none;
+      }
+
+      #removeBusyGlow {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 180ms ease;
+        background:
+          radial-gradient(120% 36% at 50% 100%, rgba(10, 132, 255, 0.24) 0%, rgba(10, 132, 255, 0) 72%),
+          linear-gradient(110deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.54) 52%, rgba(255, 255, 255, 0) 100%);
+        background-size: 100% 100%, 210% 100%;
+        background-position: 0 0, -120% 0;
+      }
+
+      #removeBusyGlow.active {
+        opacity: 1;
+        animation: removeGlowSweep 1.15s linear infinite;
+      }
+
+      @keyframes removeGlowSweep {
+        0% {
+          background-position: 0 0, -120% 0;
+        }
+        100% {
+          background-position: 0 0, 120% 0;
+        }
+      }
+
+      .toolbar {
+        position: fixed;
+        left: 12px;
+        right: 12px;
+        bottom: var(--tabs-h);
+        min-height: 132px;
+        border-radius: var(--radius-lg);
+        padding: 12px;
+        box-shadow: var(--shadow-md);
+        z-index: 35;
+      }
+
+      .tool-pane {
+        display: none;
+      }
+
+      .tool-pane.active {
+        display: block;
+      }
+
+      .row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+      }
+
+      .row label {
+        color: var(--text-secondary);
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .row button,
+      .row input,
+      .row select {
+        border: 1px solid var(--separator);
+        background: var(--surface-soft);
+        color: var(--text-secondary);
+        border-radius: var(--radius-pill);
+        min-height: var(--control-h);
+        padding: 8px 12px;
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      .row button {
+        transition: transform 120ms ease, box-shadow 120ms ease, background-color 150ms ease;
+      }
+
+      .row button:active {
+        transform: translateY(1px);
+      }
+
+      .row button.active {
+        border-color: rgba(10, 132, 255, 0.28);
+        background: var(--surface-solid);
+        color: var(--text-primary);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .row button.primary {
+        border-color: transparent;
+        background: var(--accent);
+        color: #fff;
+        box-shadow: 0 8px 18px rgba(10, 132, 255, 0.26);
+      }
+
+      .row button.primary:disabled {
+        background: var(--disabled-bg);
+        color: var(--disabled-text);
+        box-shadow: none;
+      }
+
+      .row button.quiet {
+        color: var(--text-tertiary);
+        background: var(--surface-tonal);
+      }
+
+      .row button:disabled {
+        background: var(--disabled-bg);
+        color: var(--disabled-text);
+        border-color: transparent;
+        box-shadow: none;
+      }
+
+      .row .danger {
+        border-color: rgba(255, 59, 48, 0.22);
+        background: rgba(255, 59, 48, 0.08);
+        color: #bf2f28;
+      }
+
+      .row input[type='range'] {
+        width: 156px;
+        padding: 0;
+        appearance: none;
+        background: transparent;
+      }
+
+      .row input[type='range']::-webkit-slider-runnable-track {
+        height: 4px;
+        border-radius: 999px;
+        background: #dce1e8;
+      }
+
+      .row input[type='range']::-webkit-slider-thumb {
+        appearance: none;
+        margin-top: -8px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 1px solid rgba(17, 19, 24, 0.16);
+        background: #fff;
+        box-shadow: 0 2px 6px rgba(17, 19, 24, 0.2);
+      }
+
+      .row input[type='range']::-moz-range-track {
+        height: 4px;
+        border-radius: 999px;
+        background: #dce1e8;
+      }
+
+      .row input[type='range']::-moz-range-progress {
+        height: 4px;
+        border-radius: 999px;
+        background: var(--accent);
+      }
+
+      .row input[type='range']::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 1px solid rgba(17, 19, 24, 0.16);
+        background: #fff;
+        box-shadow: 0 2px 6px rgba(17, 19, 24, 0.2);
+      }
+
+      #cropAspectRow {
+        display: inline-flex;
+        width: 100%;
+        padding: 2px;
+        border: 1px solid var(--separator);
+        border-radius: var(--radius-md);
+        background: var(--surface-soft);
+        gap: 2px;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+      }
+
+      #cropAspectRow::-webkit-scrollbar {
+        display: none;
+      }
+
+      #cropAspectRow button {
+        flex: 0 0 auto;
+        min-width: 66px;
+        justify-content: center;
+        text-align: center;
+        background: transparent;
+        border-color: transparent;
+        border-radius: 12px;
+      }
+
+      #removeBrushText {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px;
+        padding: 0 10px;
+        border-radius: 10px;
+        border: 1px solid var(--separator);
+        background: var(--surface-tonal);
+        color: var(--text-secondary);
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .tabs {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: var(--tabs-h);
+        border-top: 1px solid var(--separator);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        padding: 6px 8px max(env(safe-area-inset-bottom), 10px);
+        z-index: 45;
+      }
+
+      .tabs button {
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--text-tertiary);
+        font-size: 12px;
+        line-height: 16px;
+        font-weight: 600;
+        border-radius: 14px;
+        letter-spacing: 0.01em;
+      }
+
+      .tabs button.active {
+        color: var(--accent-ink);
+        background: rgba(10, 132, 255, 0.12);
+        border-color: rgba(10, 132, 255, 0.16);
+      }
+
+      .hint {
+        margin: 0;
+        font-size: 12px;
+        line-height: 16px;
+        color: var(--text-tertiary);
+      }
+
+      .upload-gate {
+        position: fixed;
+        inset: 0;
+        background: rgba(245, 246, 248, 0.82);
+        display: grid;
+        place-items: center;
+        z-index: 60;
+      }
+
+      .upload-card {
+        width: min(94vw, 420px);
+        border-radius: var(--radius-lg);
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.58);
+        box-shadow: var(--shadow-md);
+      }
+
+      .upload-card h1 {
+        margin: 0 0 8px;
+        font-size: 24px;
+        line-height: 30px;
+        color: #2c3442;
+      }
+
+      .upload-card p {
+        margin: 0 0 12px;
+        color: #667082;
+      }
+
+      .upload-card input {
+        width: 100%;
+        border: 1px solid var(--separator-strong);
+        border-radius: 12px;
+        padding: 10px;
+        background: var(--surface-solid);
+        color: var(--text-primary);
+      }
+
+      .upload-card input::file-selector-button {
+        border: 1px solid rgba(10, 132, 255, 0.3);
+        background: linear-gradient(180deg, #fafdff 0%, #eef6ff 100%);
+        color: #1d4f87;
+        border-radius: 10px;
+        min-height: 34px;
+        padding: 0 12px;
+        margin-right: 10px;
+        font-weight: 600;
+      }
+
+      .status {
+        font-size: 12px;
+        line-height: 16px;
+        color: var(--text-secondary);
+        margin: 4px 0 0;
+      }
+
+      .save-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(17, 19, 24, 0.22);
+        z-index: 70;
+        display: none;
+      }
+
+      .save-overlay.active {
+        display: block;
+      }
+
+      .save-panel {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        max-height: 88vh;
+        overflow: auto;
+        background: #fff;
+        border-top: 1px solid var(--separator);
+        border-radius: 20px 20px 0 0;
+        padding: 16px;
+      }
+
+      .save-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+
+      .save-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .save-preview {
+        width: 100%;
+        border-radius: 14px;
+        border: 1px solid var(--separator);
+        background: linear-gradient(180deg, #f6f8fb 0%, #eef2f6 100%);
+        overflow: hidden;
+        min-height: 168px;
+        display: grid;
+        place-items: center;
+        margin-bottom: 10px;
+      }
+
+      .save-preview img {
+        width: 100%;
+        height: 100%;
+        max-height: 240px;
+        object-fit: contain;
+        display: block;
+      }
+
+      .save-item {
+        border: 1px solid var(--separator);
+        border-radius: 14px;
+        padding: 12px;
+        background: var(--surface-soft);
+      }
+
+      .save-item h3 {
+        margin: 0 0 6px;
+        font-size: 15px;
+      }
+
+      .save-item .row {
+        margin-bottom: 10px;
+      }
+
+      .save-item .row:last-child {
+        margin-bottom: 0;
+      }
+
+      .save-item select {
+        min-width: 124px;
+      }
+
+      .save-meta {
+        margin: 0 0 8px;
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+
+      .save-item button,
+      #saveBackBtn {
+        border: 0;
+        background: var(--accent);
+        color: #fff;
+        border-radius: var(--radius-pill);
+        min-height: 40px;
+        padding: 8px 14px;
+        font-weight: 600;
+      }
+
+      #saveBackBtn {
+        background: var(--surface-tonal);
+        color: var(--text-secondary);
+      }
+
+      #saveDownloadBtn {
+        width: 100%;
+        min-height: 44px;
+        border: 1px solid rgba(10, 132, 255, 0.25);
+        color: #1266bf;
+        background-image:
+          linear-gradient(120deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.72) 50%, rgba(255, 255, 255, 0) 100%),
+          linear-gradient(180deg, #f9fcff 0%, #edf5ff 100%);
+        background-size: 170% 100%, 100% 100%;
+        background-position: -120% 0, 0 0;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.75),
+          0 6px 14px rgba(10, 132, 255, 0.12);
+        transition: background-position 280ms ease, transform 120ms ease, box-shadow 140ms ease;
+      }
+
+      #saveDownloadBtn:hover {
+        background-position: 120% 0, 0 0;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.9),
+          0 10px 20px rgba(10, 132, 255, 0.16);
+      }
+
+      #saveDownloadBtn:active {
+        transform: translateY(1px);
+      }
+
+      #saveDownloadBtn:disabled {
+        background-image: none;
+      }
+
+      .save-estimate {
+        margin: 0;
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+
+      .save-ratio {
+        margin: 4px 0 0;
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+
+      .save-notice {
+        margin: 8px 0 0;
+        font-size: 12px;
+        color: #287048;
+        min-height: 16px;
+      }
+
+      .save-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        border: 1px solid var(--separator);
+        background: var(--surface-tonal);
+        color: var(--text-secondary);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      #removeAlgorithm {
+        min-width: 150px;
+      }
+
+      #cropAspectRow button.rotated {
+        box-shadow: inset 0 -2px 0 rgba(10, 132, 255, 0.18);
+      }
+
+      .topbar.glass {
+        border-top: 0;
+        border-left: 0;
+        border-right: 0;
+      }
+
+      .tabs.glass {
+        border-bottom: 0;
+        border-left: 0;
+        border-right: 0;
+      }
+
+      .tool-pane .row:last-of-type {
+        justify-content: flex-start;
+      }
+
+      .tool-pane .row:last-of-type .primary {
+        margin-left: auto;
+        min-width: 96px;
+      }
+
+      .tool-pane .row:last-of-type .quiet:disabled {
+        opacity: 0.56;
+      }
+
+      @media (max-width: 430px) {
+        :root {
+          --tabs-h: 70px;
+        }
+
+        .stage {
+          padding: 8px 10px;
+        }
+
+        .canvas-shell {
+          border-radius: 14px;
+        }
+
+        .toolbar {
+          left: 8px;
+          right: 8px;
+          padding: 10px;
+          min-height: 120px;
+          border-radius: 16px;
+        }
+
+        .row {
+          gap: 8px;
+          margin-bottom: 8px;
+        }
+
+        .row button,
+        .row input,
+        .row select {
+          font-size: 14px;
+          padding: 7px 10px;
+        }
+
+        .row input[type='range'] {
+          width: 124px;
+        }
+
+        #removeBrushText {
+          font-size: 12px;
+          min-height: 30px;
+        }
+
+        .hint {
+          font-size: 11px;
+          line-height: 14px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+
+      @media (max-height: 760px) {
+        .hint {
+          display: none;
+        }
+      }
+
+      @media (min-width: 768px) {
+        .toolbar {
+          left: 50%;
+          right: auto;
+          width: min(560px, calc(100vw - 24px));
+          transform: translateX(-50%);
+        }
+
+        .tabs {
+          left: 50%;
+          right: auto;
+          width: min(560px, 100vw);
+          transform: translateX(-50%);
+          border-left: 1px solid var(--separator);
+          border-right: 1px solid var(--separator);
+          border-top-left-radius: 16px;
+          border-top-right-radius: 16px;
+        }
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar glass">
+      <button id="backBtn" type="button" aria-label="Back to upload">Back</button>
+      <div id="topLabel">Editor</div>
+      <button id="saveBtn" type="button" disabled>Save</button>
+    </header>
+
+    <main class="stage">
+      <div class="canvas-shell">
+        <canvas id="editorCanvas"></canvas>
+        <div id="removeBusyGlow" aria-hidden="true"></div>
+      </div>
+    </main>
+
+    <section class="toolbar glass" id="toolControls">
+      <div class="tool-pane active" data-tool="crop">
+        <div class="row" id="cropAspectRow">
+          <button type="button" data-aspect="free" class="active">Free</button>
+          <button type="button" data-aspect="1:1">1:1</button>
+          <button type="button" data-aspect="3:2">3:2</button>
+          <button type="button" data-aspect="2:3">2:3</button>
+          <button type="button" data-aspect="4:3">4:3</button>
+          <button type="button" data-aspect="3:4">3:4</button>
+          <button type="button" data-aspect="16:9">16:9</button>
+          <button type="button" data-aspect="9:16">9:16</button>
+          <button type="button" data-aspect="21:9">21:9</button>
+        </div>
+        <div class="row">
+          <button id="cropUndoBtn" type="button" class="quiet">Undo</button>
+          <button id="cropRedoBtn" type="button" class="quiet">Redo</button>
+          <button id="cropCancelBtn" type="button" class="danger">Cancel</button>
+          <button id="cropApplyBtn" type="button" class="primary">Apply</button>
+        </div>
+        <p class="hint">Drag crop corners. Pinch with two fingers to zoom/pan.</p>
+      </div>
+
+      <div class="tool-pane" data-tool="remove">
+        <div class="row">
+          <label for="removeBrush">Brush</label>
+          <input id="removeBrush" type="range" min="1" max="100" step="1" value="24" />
+          <span id="removeBrushText">24%</span>
+        </div>
+        <div class="row">
+          <label for="removeAlgorithm">Algorithm</label>
+          <select id="removeAlgorithm">
+            <option value="ai" selected>AI Generative</option>
+            <option value="natural">Natural</option>
+            <option value="texture">Texture Preserve</option>
+            <option value="aggressive">Aggressive</option>
+          </select>
+        </div>
+        <div class="row">
+          <button id="removeUndoBtn" type="button" class="quiet">Undo</button>
+          <button id="removeRedoBtn" type="button" class="quiet">Redo</button>
+        </div>
+        <p class="hint">Paint and release to remove immediately. Two-finger pinch zooms and pans.</p>
+      </div>
+
+      <p class="status" id="statusText">Upload one image to start editing.</p>
+    </section>
+
+    <nav class="tabs glass">
+      <button type="button" id="tabCrop" class="active" data-tool="crop">Crop</button>
+      <button type="button" id="tabRemove" data-tool="remove">Remove</button>
+    </nav>
+
+    <section id="uploadGate" class="upload-gate">
+      <div class="upload-card glass">
+        <h1>Editor V2</h1>
+        <p>Upload one image and switch between Crop and Remove in one session.</p>
+        <input id="uploadInput" type="file" accept="image/*" />
+      </div>
+    </section>
+
+    <section id="saveOverlay" class="save-overlay" aria-hidden="true">
+      <div class="save-panel">
+        <div class="save-head">
+          <h2 style="margin: 0">Save</h2>
+          <button id="saveBackBtn" type="button">Back to edit</button>
+        </div>
+        <div class="save-preview">
+          <img id="savePreviewImg" alt="Final product preview" />
+        </div>
+        <div class="save-list" id="saveList"></div>
+      </div>
+    </section>
+
+    <script src="/js/core/image-core.js"></script>
+    <script src="/js/core/transform-core.js"></script>
+    <script src="/js/core/canvas-renderer.js"></script>
+    <script src="/js/core/remove-api.js"></script>
+    <script src="/js/core/remove-engine.js"></script>
+    <script src="/js/tools/tool-crop.js"></script>
+    <script src="/js/tools/tool-remove.js"></script>
+    <script src="/js/v2-editor.js"></script>
+  </body>
+</html>

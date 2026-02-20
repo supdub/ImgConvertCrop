@@ -1522,6 +1522,7 @@
       </section>
     </main>
 
+    <script src="/js/core/image-core.js"></script>
     <script>
       window.__PAGE_CONFIG__ = __PAGE_CONFIG_JSON__;
 
@@ -2728,12 +2729,18 @@
       }
 
       function canEncode(mimeType) {
+        if (window.ImageCore && typeof window.ImageCore.canEncode === 'function') {
+          return window.ImageCore.canEncode(mimeType);
+        }
         const c = document.createElement('canvas');
         const out = c.toDataURL(mimeType);
         return out.startsWith(`data:${mimeType}`);
       }
 
       async function fileToImage(file) {
+        if (window.ImageCore && typeof window.ImageCore.loadImageFromFile === 'function') {
+          return window.ImageCore.loadImageFromFile(file);
+        }
         const url = URL.createObjectURL(file);
         try {
           const img = new Image();
@@ -2749,6 +2756,16 @@
       }
 
       async function renderToBlob(img, mimeType, quality, sx, sy, sw, sh, dw, dh) {
+        if (window.ImageCore && typeof window.ImageCore.renderToBlob === 'function') {
+          const result = await window.ImageCore.renderToBlob(img, {
+            mimeType,
+            quality,
+            crop: { x: sx, y: sy, w: sw, h: sh },
+            outWidth: dw,
+            outHeight: dh
+          });
+          return result.blob;
+        }
         const canvas = document.createElement('canvas');
         canvas.width = dw;
         canvas.height = dh;
