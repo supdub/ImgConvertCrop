@@ -398,6 +398,35 @@
         text-overflow: ellipsis;
       }
 
+
+      #filterPresetRow,
+      #reshapePresetRow {
+        display: inline-flex;
+        width: 100%;
+        padding: 2px;
+        border-radius: 10px;
+        background: rgba(17, 24, 39, 0.05);
+        gap: 2px;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+
+      #filterPresetRow button,
+      #reshapePresetRow button {
+        flex: 0 0 auto;
+        min-width: 66px;
+        min-height: 32px;
+        border-radius: 10px;
+        color: var(--text-secondary);
+        font-size: 13px;
+      }
+
+      #filterPresetRow button.active,
+      #reshapePresetRow button.active {
+        background: rgba(10, 132, 255, 0.12);
+        color: var(--accent);
+      }
+
       .tabs {
         position: fixed;
         bottom: 0;
@@ -406,7 +435,7 @@
         height: calc(var(--tabs-h) + env(safe-area-inset-bottom));
         border-top: 1px solid var(--separator);
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(4, 1fr);
         padding: 4px 8px env(safe-area-inset-bottom);
         z-index: 50;
       }
@@ -842,6 +871,20 @@
           </div>
         </div>
         <div class="tool-card glass">
+          <div class="tool-row">
+            <button id="rotateLeftBtn" type="button" class="action-btn text">↺ 90°</button>
+            <button id="rotateRightBtn" type="button" class="action-btn text">↻ 90°</button>
+            <button id="flipMirrorBtn" type="button" class="action-btn text">⇋ Mirror</button>
+          </div>
+          <div class="tool-row">
+            <label for="freeRotateInput">Fine Rotate</label>
+            <input id="freeRotateInput" type="range" min="-45" max="45" step="1" value="0" style="flex: 1; min-width: 0" />
+            <span id="freeRotateText">0°</span>
+            <button id="applyFreeRotateBtn" type="button" class="action-btn text">Apply</button>
+          </div>
+        </div>
+
+        <div class="tool-card glass">
           <div class="apply-row">
             <div class="tool-row">
               <button id="cropUndoBtn" type="button" class="icon-btn" aria-label="Undo crop">↶</button>
@@ -876,6 +919,56 @@
         </div>
       </div>
 
+      <div class="tool-pane" data-tool="filter">
+        <div class="tool-card glass">
+          <div class="tool-row" id="filterPresetRow">
+            <button type="button" data-filter="vivid" class="active">Vivid</button>
+            <button type="button" data-filter="warm">Warm</button>
+            <button type="button" data-filter="cool">Cool</button>
+            <button type="button" data-filter="mono">Mono</button>
+            <button type="button" data-filter="fade">Fade</button>
+          </div>
+          <div class="tool-row">
+            <label for="filterIntensity">Intensity</label>
+            <input id="filterIntensity" type="range" min="0" max="100" step="1" value="65" style="flex: 1; min-width: 0" />
+            <span id="filterIntensityText">65%</span>
+          </div>
+        </div>
+        <div class="tool-card glass">
+          <div class="apply-row">
+            <div class="tool-row">
+              <button id="filterUndoBtn" type="button" class="icon-btn" aria-label="Undo filter">↶</button>
+              <button id="filterRedoBtn" type="button" class="icon-btn" aria-label="Redo filter">↷</button>
+            </div>
+            <button id="filterApplyBtn" type="button" class="action-btn primary">Apply</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-pane" data-tool="reshape">
+        <div class="tool-card glass">
+          <div class="tool-row">
+            <label for="reshapeBrush">Brush</label>
+            <input id="reshapeBrush" type="range" min="10" max="180" step="1" value="70" style="flex: 1; min-width: 0" />
+            <span id="reshapeBrushText">70</span>
+          </div>
+          <div class="tool-row">
+            <label for="reshapeStrength">Strength</label>
+            <input id="reshapeStrength" type="range" min="5" max="100" step="1" value="40" style="flex: 1; min-width: 0" />
+            <span id="reshapeStrengthText">40%</span>
+          </div>
+        </div>
+        <div class="tool-card glass">
+          <div class="apply-row">
+            <div class="tool-row">
+              <button id="reshapeUndoBtn" type="button" class="icon-btn" aria-label="Undo reshape">↶</button>
+              <button id="reshapeRedoBtn" type="button" class="icon-btn" aria-label="Redo reshape">↷</button>
+            </div>
+            <button id="reshapeResetBtn" type="button" class="action-btn text">Reset</button>
+          </div>
+        </div>
+      </div>
+
       <p class="status" id="statusText">Drag handles to crop. Pinch to zoom.</p>
     </section>
 
@@ -887,6 +980,14 @@
       <button type="button" id="tabRemove" data-tool="remove">
         <span class="tab-icon">✎</span>
         <span>Remove</span>
+      </button>
+      <button type="button" id="tabFilter" data-tool="filter">
+        <span class="tab-icon">◐</span>
+        <span>Filter</span>
+      </button>
+      <button type="button" id="tabReshape" data-tool="reshape">
+        <span class="tab-icon">◍</span>
+        <span>Reshape</span>
       </button>
     </nav>
 
