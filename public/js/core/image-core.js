@@ -195,6 +195,99 @@
     return out;
   };
 
+  ImageCore.applyColorAdjustments = function applyColorAdjustments(sourceCanvas, adjustments) {
+    const opts = adjustments || {};
+    const highlight = clamp(Number(opts.highlight) || 0, -100, 100) / 100;
+    const contrast = clamp(Number(opts.contrast) || 0, -100, 100) / 100;
+    const warmth = clamp(Number(opts.warmth) || 0, -100, 100) / 100;
+    const saturation = clamp(Number(opts.saturation) || 0, -100, 100) / 100;
+
+    const out = ImageCore.cloneCanvas(sourceCanvas);
+    const ctx = out.getContext('2d');
+    const brightness = 1 + highlight * 0.38;
+    const contrastValue = 1 + contrast * 0.55;
+    const saturationValue = 1 + saturation * 0.9;
+    const sepiaValue = Math.max(0, warmth * 0.35);
+    const hueRotate = -warmth * 10;
+    ctx.filter = `brightness(${brightness}) contrast(${contrastValue}) saturate(${saturationValue}) sepia(${sepiaValue}) hue-rotate(${hueRotate}deg)`;
+    ctx.clearRect(0, 0, out.width, out.height);
+    ctx.drawImage(sourceCanvas, 0, 0);
+    ctx.filter = 'none';
+    return out;
+  };
+
+  ImageCore.addSolidFrame = function addSolidFrame(sourceCanvas, colorHex, thicknessPercent) {
+    const pct = clamp(Number(thicknessPercent) || 0, 0, 30) / 100;
+    if (pct <= 0) return ImageCore.cloneCanvas(sourceCanvas);
+    const color = String(colorHex || '#ffffff');
+    const border = Math.max(1, Math.round(Math.min(sourceCanvas.width, sourceCanvas.height) * pct));
+    const out = ImageCore.createCanvas(sourceCanvas.width + border * 2, sourceCanvas.height + border * 2);
+    const ctx = out.getContext('2d');
+    ctx.fillStyle = color;
+    ctx.fillRect(0, 0, out.width, out.height);
+    ctx.drawImage(sourceCanvas, border, border);
+    return out;
+  };
+
+  ImageCore.applyMosaicStroke = function applyMosaicStroke(sourceCanvas, centerX, centerY, radius, blockSize, type) {
+    const out = ImageCore.cloneCanvas(sourceCanvas);
+    const ctx = out.getContext('2d');
+    const r = Math.max(6, Number(radius) || 18);
+    const b = Math.max(4, Number(blockSize) || 10);
+    const regionSize = Math.max(1, Math.ceil(r * 2));
+    const sx = clamp(Math.round(centerX - r), 0, out.width - 1);
+    const sy = clamp(Math.round(centerY - r), 0, out.height - 1);
+    const sw = Math.min(regionSize, out.width - sx);
+    const sh = Math.min(regionSize, out.height - sy);
+    if (sw < 2 || sh < 2) return out;
+
+    const temp = ImageCore.createCanvas(sw, sh);
+    const tctx = temp.getContext('2d');
+    tctx.drawImage(sourceCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
+
+    const paintMosaic = (mode) => {
+      const tinyW = Math.max(1, Math.round(sw / b));
+      const tinyH = Math.max(1, Math.round(sh / b));
+      const tiny = ImageCore.createCanvas(tinyW, tinyH);
+      const tinyCtx = tiny.getContext('2d');
+      tinyCtx.imageSmoothingEnabled = mode === 'soft';
+      tinyCtx.drawImage(temp, 0, 0, tinyW, tinyH);
+      if (mode === 'crystal') {
+        const data = tinyCtx.getImageData(0, 0, tinyW, tinyH);
+        for (let i = 0; i < data.data.length; i += 4) {
+          data.data[i] = Math.round(data.data[i] / 64) * 64;
+          data.data[i + 1] = Math.round(data.data[i + 1] / 64) * 64;
+          data.data[i + 2] = Math.round(data.data[i + 2] / 64) * 64;
+        }
+        tinyCtx.putImageData(data, 0, 0);
+      }
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.imageSmoothingEnabled = mode === 'soft';
+      ctx.drawImage(tiny, 0, 0, tinyW, tinyH, sx, sy, sw, sh);
+      ctx.restore();
+    };
+
+    if (type === 'blur') {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.filter = `blur(${Math.max(1, b * 0.32)}px)`;
+      ctx.drawImage(sourceCanvas, sx, sy, sw, sh, sx, sy, sw, sh);
+      ctx.filter = 'none';
+      ctx.restore();
+    } else if (type === 'crystal') {
+      paintMosaic('crystal');
+    } else {
+      paintMosaic('pixel');
+    }
+
+    return out;
+  };
+
   ImageCore.pushPixels = function pushPixels(sourceCanvas, centerX, centerY, deltaX, deltaY, radius, strength) {
     const out = ImageCore.cloneCanvas(sourceCanvas);
     const w = out.width;

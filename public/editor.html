@@ -368,8 +368,15 @@
 
       #fineRotateValue,
       #filterStrengthText,
+      #adjustHighlightText,
+      #adjustContrastText,
+      #adjustWarmthText,
+      #adjustSaturationText,
       #reshapeBrushText,
-      #reshapeStrengthText {
+      #reshapeStrengthText,
+      #frameSizeText,
+      #mosaicBrushText,
+      #mosaicDetailText {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -395,8 +402,15 @@
 
       #fineRotateSlider,
       #filterStrength,
+      #adjustHighlight,
+      #adjustContrast,
+      #adjustWarmth,
+      #adjustSaturation,
       #reshapeBrush,
-      #reshapeStrength {
+      #reshapeStrength,
+      #frameSize,
+      #mosaicBrush,
+      #mosaicDetail {
         flex: 1;
         min-width: 0;
         padding: 0;
@@ -406,8 +420,15 @@
 
       #fineRotateSlider::-webkit-slider-runnable-track,
       #filterStrength::-webkit-slider-runnable-track,
+      #adjustHighlight::-webkit-slider-runnable-track,
+      #adjustContrast::-webkit-slider-runnable-track,
+      #adjustWarmth::-webkit-slider-runnable-track,
+      #adjustSaturation::-webkit-slider-runnable-track,
       #reshapeBrush::-webkit-slider-runnable-track,
-      #reshapeStrength::-webkit-slider-runnable-track {
+      #reshapeStrength::-webkit-slider-runnable-track,
+      #frameSize::-webkit-slider-runnable-track,
+      #mosaicBrush::-webkit-slider-runnable-track,
+      #mosaicDetail::-webkit-slider-runnable-track {
         height: 4px;
         border-radius: 999px;
         background: #d6dbe4;
@@ -415,8 +436,15 @@
 
       #fineRotateSlider::-webkit-slider-thumb,
       #filterStrength::-webkit-slider-thumb,
+      #adjustHighlight::-webkit-slider-thumb,
+      #adjustContrast::-webkit-slider-thumb,
+      #adjustWarmth::-webkit-slider-thumb,
+      #adjustSaturation::-webkit-slider-thumb,
       #reshapeBrush::-webkit-slider-thumb,
-      #reshapeStrength::-webkit-slider-thumb {
+      #reshapeStrength::-webkit-slider-thumb,
+      #frameSize::-webkit-slider-thumb,
+      #mosaicBrush::-webkit-slider-thumb,
+      #mosaicDetail::-webkit-slider-thumb {
         appearance: none;
         margin-top: -8px;
         width: 20px;
@@ -429,8 +457,15 @@
 
       #fineRotateSlider::-moz-range-track,
       #filterStrength::-moz-range-track,
+      #adjustHighlight::-moz-range-track,
+      #adjustContrast::-moz-range-track,
+      #adjustWarmth::-moz-range-track,
+      #adjustSaturation::-moz-range-track,
       #reshapeBrush::-moz-range-track,
-      #reshapeStrength::-moz-range-track {
+      #reshapeStrength::-moz-range-track,
+      #frameSize::-moz-range-track,
+      #mosaicBrush::-moz-range-track,
+      #mosaicDetail::-moz-range-track {
         height: 4px;
         border-radius: 999px;
         background: #d6dbe4;
@@ -477,7 +512,7 @@
         height: calc(var(--tabs-h) + env(safe-area-inset-bottom));
         border-top: 1px solid var(--separator);
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(5, 1fr);
         padding: 4px 8px env(safe-area-inset-bottom);
         z-index: 50;
       }
@@ -933,6 +968,15 @@
             <button id="cropApplyBtn" type="button" class="action-btn primary">Apply</button>
           </div>
         </div>
+        <div class="tool-card glass">
+          <div class="tool-row">
+            <label for="frameSize">Frame</label>
+            <input id="frameSize" type="range" min="0" max="20" step="1" value="0" />
+            <span id="frameSizeText">0%</span>
+            <input id="frameColor" type="color" value="#ffffff" style="width:42px;height:32px;padding:0;border:0;background:transparent" />
+            <button id="frameApplyBtn" type="button" class="action-btn text">Add</button>
+          </div>
+        </div>
       </div>
 
       <div class="tool-pane" data-tool="filter">
@@ -950,12 +994,56 @@
             </select>
             <button id="filterUndoBtn" type="button" class="icon-btn" aria-label="Undo filter">↶</button>
             <button id="filterRedoBtn" type="button" class="icon-btn" aria-label="Redo filter">↷</button>
-            <button id="filterApplyBtn" type="button" class="action-btn primary">Apply</button>
           </div>
           <div class="tool-row">
             <label for="filterStrength">Strength</label>
             <input id="filterStrength" type="range" min="0" max="100" step="1" value="100" />
             <span id="filterStrengthText">100%</span>
+          </div>
+          <div class="tool-row">
+            <label for="adjustHighlight">Highlight</label>
+            <input id="adjustHighlight" type="range" min="-100" max="100" step="1" value="0" />
+            <span id="adjustHighlightText">0</span>
+          </div>
+          <div class="tool-row">
+            <label for="adjustContrast">Contrast</label>
+            <input id="adjustContrast" type="range" min="-100" max="100" step="1" value="0" />
+            <span id="adjustContrastText">0</span>
+          </div>
+          <div class="tool-row">
+            <label for="adjustWarmth">Warm</label>
+            <input id="adjustWarmth" type="range" min="-100" max="100" step="1" value="0" />
+            <span id="adjustWarmthText">0</span>
+          </div>
+          <div class="tool-row">
+            <label for="adjustSaturation">Color</label>
+            <input id="adjustSaturation" type="range" min="-100" max="100" step="1" value="0" />
+            <span id="adjustSaturationText">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-pane" data-tool="mosaic">
+        <div class="tool-card glass">
+          <div class="tool-row">
+            <label for="mosaicType">Type</label>
+            <select id="mosaicType">
+              <option value="pixel" selected>Pixel</option>
+              <option value="blur">Blur</option>
+              <option value="crystal">Crystal</option>
+            </select>
+            <button id="mosaicUndoBtn" type="button" class="icon-btn" aria-label="Undo mosaic">↶</button>
+            <button id="mosaicRedoBtn" type="button" class="icon-btn" aria-label="Redo mosaic">↷</button>
+          </div>
+          <div class="tool-row">
+            <label for="mosaicBrush">Brush</label>
+            <input id="mosaicBrush" type="range" min="6" max="60" step="1" value="20" />
+            <span id="mosaicBrushText">20%</span>
+          </div>
+          <div class="tool-row">
+            <label for="mosaicDetail">Detail</label>
+            <input id="mosaicDetail" type="range" min="4" max="50" step="1" value="16" />
+            <span id="mosaicDetailText">16</span>
           </div>
         </div>
       </div>
@@ -1023,12 +1111,16 @@
         <span class="tab-icon">↔</span>
         <span>Reshape</span>
       </button>
+      <button type="button" id="tabMosaic" data-tool="mosaic">
+        <span class="tab-icon">▩</span>
+        <span>Mosaic</span>
+      </button>
     </nav>
 
     <section id="uploadGate" class="upload-gate">
       <div class="upload-card glass">
         <h1>Editor V2</h1>
-        <p>Upload one image and edit with Crop, Remove, Filter, and Reshape in one session.</p>
+        <p>Upload one image and edit with Crop, Remove, Filter, Reshape, and Mosaic in one session.</p>
         <input id="uploadInput" type="file" accept="image/*" />
       </div>
     </section>
