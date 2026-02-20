@@ -195,6 +195,142 @@
     return out;
   };
 
+  ImageCore.applyColorAdjustments = function applyColorAdjustments(sourceCanvas, adjustments) {
+    const opts = adjustments || {};
+    const exposure = clamp(Number(opts.exposure) || 0, -100, 100);
+    const contrast = clamp(Number(opts.contrast) || 0, -100, 100);
+    const saturation = clamp(Number(opts.saturation) || 0, -100, 100);
+    const warmth = clamp(Number(opts.warmth) || 0, -100, 100);
+    const highlights = clamp(Number(opts.highlights) || 0, -100, 100);
+    const shadows = clamp(Number(opts.shadows) || 0, -100, 100);
+    const sharpness = clamp(Number(opts.sharpness) || 0, 0, 100);
+
+    const out = ImageCore.cloneCanvas(sourceCanvas);
+    const ctx = out.getContext('2d');
+    const image = ctx.getImageData(0, 0, out.width, out.height);
+    const data = image.data;
+
+    const exposureFactor = exposure / 100;
+    const contrastFactor = 1 + contrast / 100;
+    const saturationFactor = 1 + saturation / 100;
+    const warmRed = Math.max(0, warmth) * 0.4;
+    const warmBlue = Math.max(0, -warmth) * 0.4;
+
+    for (let i = 0; i < data.length; i += 4) {
+      let r = data[i];
+      let g = data[i + 1];
+      let b = data[i + 2];
+
+      r = r + 255 * exposureFactor;
+      g = g + 255 * exposureFactor;
+      b = b + 255 * exposureFactor;
+
+      r = (r - 128) * contrastFactor + 128;
+      g = (g - 128) * contrastFactor + 128;
+      b = (b - 128) * contrastFactor + 128;
+
+      const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      r = luminance + (r - luminance) * saturationFactor;
+      g = luminance + (g - luminance) * saturationFactor;
+      b = luminance + (b - luminance) * saturationFactor;
+
+      if (highlights !== 0) {
+        const highlightWeight = clamp((luminance - 128) / 127, 0, 1);
+        const delta = (highlights / 100) * highlightWeight * 70;
+        r += delta;
+        g += delta;
+        b += delta;
+      }
+      if (shadows !== 0) {
+        const shadowWeight = clamp((128 - luminance) / 128, 0, 1);
+        const delta = (shadows / 100) * shadowWeight * 70;
+        r += delta;
+        g += delta;
+        b += delta;
+      }
+
+      r += warmRed - warmBlue;
+      g += (warmRed - warmBlue) * 0.2;
+      b += warmBlue - warmRed;
+
+      data[i] = clamp(Math.round(r), 0, 255);
+      data[i + 1] = clamp(Math.round(g), 0, 255);
+      data[i + 2] = clamp(Math.round(b), 0, 255);
+    }
+
+    ctx.putImageData(image, 0, 0);
+
+    if (sharpness > 0) {
+      const pass = ImageCore.cloneCanvas(out);
+      const pctx = pass.getContext('2d');
+      const amount = sharpness / 100;
+      pctx.filter = `contrast(${1 + amount * 0.45}) saturate(${1 + amount * 0.25})`;
+      pctx.drawImage(out, 0, 0);
+      pctx.filter = 'none';
+      const finalCtx = out.getContext('2d');
+      finalCtx.globalAlpha = amount * 0.5;
+      finalCtx.drawImage(pass, 0, 0);
+      finalCtx.globalAlpha = 1;
+    }
+
+    return out;
+  };
+
+  ImageCore.addColorFrame = function addColorFrame(sourceCanvas, options) {
+    const opts = options || {};
+    const framePercent = clamp(Number(opts.sizePercent) || 0, 0, 30);
+    if (framePercent <= 0) return ImageCore.cloneCanvas(sourceCanvas);
+    const frameSize = Math.round(Math.min(sourceCanvas.width, sourceCanvas.height) * framePercent / 100);
+    const out = ImageCore.cloneCanvas(sourceCanvas);
+    const ctx = out.getContext('2d');
+    ctx.strokeStyle = opts.color || '#ffffff';
+    ctx.lineWidth = Math.max(1, frameSize * 2);
+    ctx.strokeRect(frameSize, frameSize, out.width - frameSize * 2, out.height - frameSize * 2);
+    return out;
+  };
+
+  function pixelateRegion(ctx, rect, blockSize) {
+    const x = Math.max(0, Math.floor(rect.x));
+    const y = Math.max(0, Math.floor(rect.y));
+    const w = Math.max(1, Math.ceil(rect.w));
+    const h = Math.max(1, Math.ceil(rect.h));
+    const b = Math.max(2, Math.round(blockSize));
+    const sample = ImageCore.createCanvas(Math.max(1, Math.ceil(w / b)), Math.max(1, Math.ceil(h / b)));
+    const sctx = sample.getContext('2d');
+    sctx.imageSmoothingEnabled = false;
+    sctx.drawImage(ctx.canvas, x, y, w, h, 0, 0, sample.width, sample.height);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(sample, 0, 0, sample.width, sample.height, x, y, w, h);
+  }
+
+  ImageCore.applyMosaicStroke = function applyMosaicStroke(sourceCanvas, points, brushSize, type) {
+    if (!Array.isArray(points) || points.length === 0) return ImageCore.cloneCanvas(sourceCanvas);
+    const out = ImageCore.cloneCanvas(sourceCanvas);
+    const ctx = out.getContext('2d');
+    const size = Math.max(8, Number(brushSize) || 20);
+    const mosaicType = String(type || 'square');
+
+    points.forEach((p) => {
+      const radius = size / 2;
+      const rect = { x: p.x - radius, y: p.y - radius, w: size, h: size };
+      if (mosaicType === 'hex') {
+        pixelateRegion(ctx, rect, Math.max(4, size * 0.35));
+      } else if (mosaicType === 'soft') {
+        pixelateRegion(ctx, rect, Math.max(5, size * 0.25));
+        ctx.save();
+        ctx.globalAlpha = 0.25;
+        ctx.filter = 'blur(1px)';
+        ctx.drawImage(out, rect.x, rect.y, rect.w, rect.h, rect.x, rect.y, rect.w, rect.h);
+        ctx.filter = 'none';
+        ctx.restore();
+      } else {
+        pixelateRegion(ctx, rect, Math.max(4, size * 0.4));
+      }
+    });
+    ctx.imageSmoothingEnabled = true;
+    return out;
+  };
+
   ImageCore.pushPixels = function pushPixels(sourceCanvas, centerX, centerY, deltaX, deltaY, radius, strength) {
     const out = ImageCore.cloneCanvas(sourceCanvas);
     const w = out.width;
