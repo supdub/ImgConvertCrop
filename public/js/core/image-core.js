@@ -134,6 +134,91 @@
     return out;
   };
 
+
+
+  ImageCore.rotateCanvas = function rotateCanvas(sourceCanvas, degrees) {
+    const radians = (Number(degrees) || 0) * Math.PI / 180;
+    const sin = Math.abs(Math.sin(radians));
+    const cos = Math.abs(Math.cos(radians));
+    const outW = Math.max(1, Math.round(sourceCanvas.width * cos + sourceCanvas.height * sin));
+    const outH = Math.max(1, Math.round(sourceCanvas.width * sin + sourceCanvas.height * cos));
+    const out = ImageCore.createCanvas(outW, outH);
+    const ctx = out.getContext('2d');
+    ctx.translate(outW / 2, outH / 2);
+    ctx.rotate(radians);
+    ctx.drawImage(sourceCanvas, -sourceCanvas.width / 2, -sourceCanvas.height / 2);
+    return out;
+  };
+
+  ImageCore.flipCanvasHorizontal = function flipCanvasHorizontal(sourceCanvas) {
+    const out = ImageCore.createCanvas(sourceCanvas.width, sourceCanvas.height);
+    const ctx = out.getContext('2d');
+    ctx.translate(out.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(sourceCanvas, 0, 0);
+    return out;
+  };
+
+  ImageCore.applyFilterPreset = function applyFilterPreset(sourceCanvas, preset) {
+    const out = ImageCore.cloneCanvas(sourceCanvas);
+    const ctx = out.getContext('2d');
+    const p = String(preset || 'none').toLowerCase();
+    const filters = {
+      none: 'none',
+      vivid: 'contrast(1.18) saturate(1.24)',
+      portrait: 'brightness(1.06) contrast(1.08) saturate(1.08)',
+      bw: 'grayscale(1) contrast(1.12)',
+      vintage: 'sepia(0.42) contrast(1.05) saturate(0.84)',
+      warm: 'sepia(0.24) saturate(1.14) hue-rotate(-8deg)',
+      cool: 'saturate(0.9) hue-rotate(10deg) contrast(1.04)'
+    };
+    ctx.filter = filters[p] || 'none';
+    const temp = ImageCore.cloneCanvas(sourceCanvas);
+    ctx.clearRect(0, 0, out.width, out.height);
+    ctx.drawImage(temp, 0, 0);
+    ctx.filter = 'none';
+    return out;
+  };
+
+  ImageCore.pushPixels = function pushPixels(sourceCanvas, centerX, centerY, deltaX, deltaY, radius, strength) {
+    const out = ImageCore.cloneCanvas(sourceCanvas);
+    const w = out.width;
+    const h = out.height;
+    const ctx = out.getContext('2d');
+    const src = ctx.getImageData(0, 0, w, h);
+    const dst = ctx.createImageData(w, h);
+    dst.data.set(src.data);
+    const r = Math.max(6, Number(radius) || 20);
+    const force = Math.max(0.02, Math.min(1, Number(strength) || 0.4));
+    const maxShiftX = deltaX * force;
+    const maxShiftY = deltaY * force;
+    const minX = Math.max(0, Math.floor(centerX - r));
+    const maxX = Math.min(w - 1, Math.ceil(centerX + r));
+    const minY = Math.max(0, Math.floor(centerY - r));
+    const maxY = Math.min(h - 1, Math.ceil(centerY + r));
+
+    for (let y = minY; y <= maxY; y += 1) {
+      for (let x = minX; x <= maxX; x += 1) {
+        const dx = x - centerX;
+        const dy = y - centerY;
+        const dist = Math.hypot(dx, dy);
+        if (dist >= r) continue;
+        const falloff = (1 - dist / r) ** 2;
+        const sx = clamp(Math.round(x - maxShiftX * falloff), 0, w - 1);
+        const sy = clamp(Math.round(y - maxShiftY * falloff), 0, h - 1);
+        const di = (y * w + x) * 4;
+        const si = (sy * w + sx) * 4;
+        dst.data[di] = src.data[si];
+        dst.data[di + 1] = src.data[si + 1];
+        dst.data[di + 2] = src.data[si + 2];
+        dst.data[di + 3] = src.data[si + 3];
+      }
+    }
+
+    ctx.putImageData(dst, 0, 0);
+    return out;
+  };
+
   ImageCore.estimateFileSize = function estimateFileSize(opts) {
     const width = Number(opts.width) || 1;
     const height = Number(opts.height) || 1;

@@ -8,7 +8,7 @@
       :root {
         --top-h: 46px;
         --tabs-h: 58px;
-        --tool-h: 116px;
+        --tool-h: 156px;
         --control-h: 40px;
         --bg-base: #f5f5f7;
         --surface-glass: rgba(255, 255, 255, 0.82);
@@ -364,6 +364,71 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
       }
 
+
+      #fineRotateValue,
+      #reshapeBrushText,
+      #reshapeStrengthText {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 52px;
+        min-height: 24px;
+        padding: 0 8px;
+        border-radius: 10px;
+        background: #eceff4;
+        color: var(--text-secondary);
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      #filterPreset {
+        border-radius: 10px;
+        min-width: 132px;
+        max-width: 54vw;
+        background: rgba(17, 24, 39, 0.06);
+        min-height: 36px;
+        font-size: 13px;
+        padding: 0 8px;
+      }
+
+      #fineRotateSlider,
+      #reshapeBrush,
+      #reshapeStrength {
+        flex: 1;
+        min-width: 0;
+        padding: 0;
+        appearance: none;
+        background: transparent;
+      }
+
+      #fineRotateSlider::-webkit-slider-runnable-track,
+      #reshapeBrush::-webkit-slider-runnable-track,
+      #reshapeStrength::-webkit-slider-runnable-track {
+        height: 4px;
+        border-radius: 999px;
+        background: #d6dbe4;
+      }
+
+      #fineRotateSlider::-webkit-slider-thumb,
+      #reshapeBrush::-webkit-slider-thumb,
+      #reshapeStrength::-webkit-slider-thumb {
+        appearance: none;
+        margin-top: -8px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 0;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+      }
+
+      #fineRotateSlider::-moz-range-track,
+      #reshapeBrush::-moz-range-track,
+      #reshapeStrength::-moz-range-track {
+        height: 4px;
+        border-radius: 999px;
+        background: #d6dbe4;
+      }
       #removeBrushText {
         display: inline-flex;
         align-items: center;
@@ -406,7 +471,7 @@
         height: calc(var(--tabs-h) + env(safe-area-inset-bottom));
         border-top: 1px solid var(--separator);
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(4, 1fr);
         padding: 4px 8px env(safe-area-inset-bottom);
         z-index: 50;
       }
@@ -842,6 +907,19 @@
           </div>
         </div>
         <div class="tool-card glass">
+          <div class="tool-row">
+            <button id="rotateCcwBtn" type="button" class="icon-btn" aria-label="Rotate anticlockwise">⟲</button>
+            <button id="rotateCwBtn" type="button" class="icon-btn" aria-label="Rotate clockwise">⟳</button>
+            <button id="flipHorizontalBtn" type="button" class="action-btn text">Mirror</button>
+          </div>
+          <div class="tool-row">
+            <label for="fineRotateSlider">Fine</label>
+            <input id="fineRotateSlider" type="range" min="-45" max="45" step="0.5" value="0" />
+            <span id="fineRotateValue">0°</span>
+            <button id="fineRotateApplyBtn" type="button" class="action-btn text">Rotate</button>
+          </div>
+        </div>
+        <div class="tool-card glass">
           <div class="apply-row">
             <div class="tool-row">
               <button id="cropUndoBtn" type="button" class="icon-btn" aria-label="Undo crop">↶</button>
@@ -850,6 +928,51 @@
             </div>
             <button id="cropApplyBtn" type="button" class="action-btn primary">Apply</button>
           </div>
+        </div>
+      </div>
+
+      <div class="tool-pane" data-tool="filter">
+        <div class="tool-card glass">
+          <div class="tool-row">
+            <label for="filterPreset">Filter</label>
+            <select id="filterPreset">
+              <option value="none" selected>None</option>
+              <option value="vivid">Vivid</option>
+              <option value="portrait">Portrait</option>
+              <option value="bw">B&W</option>
+              <option value="vintage">Vintage</option>
+              <option value="warm">Warm</option>
+              <option value="cool">Cool</option>
+            </select>
+            <button id="filterUndoBtn" type="button" class="icon-btn" aria-label="Undo filter">↶</button>
+            <button id="filterRedoBtn" type="button" class="icon-btn" aria-label="Redo filter">↷</button>
+          </div>
+        </div>
+        <div class="tool-card glass">
+          <div class="apply-row">
+            <button id="filterResetBtn" type="button" class="action-btn text">Reset</button>
+            <button id="filterApplyBtn" type="button" class="action-btn primary">Apply</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-pane" data-tool="reshape">
+        <div class="tool-card glass">
+          <div class="tool-row">
+            <label for="reshapeBrush">Brush</label>
+            <input id="reshapeBrush" type="range" min="5" max="50" step="1" value="20" />
+            <span id="reshapeBrushText">20%</span>
+            <button id="reshapeUndoBtn" type="button" class="icon-btn" aria-label="Undo reshape">↶</button>
+            <button id="reshapeRedoBtn" type="button" class="icon-btn" aria-label="Redo reshape">↷</button>
+          </div>
+          <div class="tool-row">
+            <label for="reshapeStrength">Push</label>
+            <input id="reshapeStrength" type="range" min="5" max="100" step="1" value="48" />
+            <span id="reshapeStrengthText">48%</span>
+          </div>
+        </div>
+        <div class="tool-card glass">
+          <p class="status" style="margin:0">Drag inward on body edges to create a slimmer shape.</p>
         </div>
       </div>
 
@@ -888,12 +1011,20 @@
         <span class="tab-icon">✎</span>
         <span>Remove</span>
       </button>
+      <button type="button" id="tabFilter" data-tool="filter">
+        <span class="tab-icon">◍</span>
+        <span>Filter</span>
+      </button>
+      <button type="button" id="tabReshape" data-tool="reshape">
+        <span class="tab-icon">↔</span>
+        <span>Reshape</span>
+      </button>
     </nav>
 
     <section id="uploadGate" class="upload-gate">
       <div class="upload-card glass">
         <h1>Editor V2</h1>
-        <p>Upload one image and switch between Crop and Remove in one session.</p>
+        <p>Upload one image and edit with Crop, Remove, Filter, and Reshape in one session.</p>
         <input id="uploadInput" type="file" accept="image/*" />
       </div>
     </section>
