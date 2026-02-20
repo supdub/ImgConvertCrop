@@ -21,6 +21,7 @@
   const tabRemove = document.getElementById('tabRemove');
   const tabFilter = document.getElementById('tabFilter');
   const tabReshape = document.getElementById('tabReshape');
+  const tabMosaic = document.getElementById('tabMosaic');
 
   const cropApplyBtn = document.getElementById('cropApplyBtn');
   const rotateCwBtn = document.getElementById('rotateCwBtn');
@@ -31,11 +32,22 @@
   const cropUndoBtn = document.getElementById('cropUndoBtn');
   const cropRedoBtn = document.getElementById('cropRedoBtn');
   const cropAspectRow = document.getElementById('cropAspectRow');
+  const frameSize = document.getElementById('frameSize');
+  const frameSizeText = document.getElementById('frameSizeText');
+  const frameColor = document.getElementById('frameColor');
+  const frameApplyBtn = document.getElementById('frameApplyBtn');
 
   const filterPreset = document.getElementById('filterPreset');
   const filterStrength = document.getElementById('filterStrength');
   const filterStrengthText = document.getElementById('filterStrengthText');
-  const filterApplyBtn = document.getElementById('filterApplyBtn');
+  const adjustHighlight = document.getElementById('adjustHighlight');
+  const adjustHighlightText = document.getElementById('adjustHighlightText');
+  const adjustContrast = document.getElementById('adjustContrast');
+  const adjustContrastText = document.getElementById('adjustContrastText');
+  const adjustWarmth = document.getElementById('adjustWarmth');
+  const adjustWarmthText = document.getElementById('adjustWarmthText');
+  const adjustSaturation = document.getElementById('adjustSaturation');
+  const adjustSaturationText = document.getElementById('adjustSaturationText');
   const filterUndoBtn = document.getElementById('filterUndoBtn');
   const filterRedoBtn = document.getElementById('filterRedoBtn');
 
@@ -51,6 +63,14 @@
   const removeAlgorithm = document.getElementById('removeAlgorithm');
   const removeUndoBtn = document.getElementById('removeUndoBtn');
   const removeRedoBtn = document.getElementById('removeRedoBtn');
+
+  const mosaicType = document.getElementById('mosaicType');
+  const mosaicBrush = document.getElementById('mosaicBrush');
+  const mosaicBrushText = document.getElementById('mosaicBrushText');
+  const mosaicDetail = document.getElementById('mosaicDetail');
+  const mosaicDetailText = document.getElementById('mosaicDetailText');
+  const mosaicUndoBtn = document.getElementById('mosaicUndoBtn');
+  const mosaicRedoBtn = document.getElementById('mosaicRedoBtn');
 
   const state = {
     originalImage: null,
@@ -70,7 +90,9 @@
       filterUndo: [],
       filterRedo: [],
       reshapeUndo: [],
-      reshapeRedo: []
+      reshapeRedo: [],
+      mosaicUndo: [],
+      mosaicRedo: []
     },
     crop: {
       aspect: 'free',
@@ -78,7 +100,9 @@
       rotatedAspect: false,
       rect: null,
       draftRect: null,
-      interaction: null
+      interaction: null,
+      frameSizePercent: 0,
+      frameColor: '#ffffff'
     },
     remove: {
       algorithm: 'ai',
@@ -89,11 +113,21 @@
     },
     filter: {
       preset: 'none',
-      strength: 100
+      strength: 100,
+      highlight: 0,
+      contrast: 0,
+      warmth: 0,
+      saturation: 0
     },
     reshape: {
       brushPercent: 20,
       strength: 48,
+      active: null
+    },
+    mosaic: {
+      type: 'pixel',
+      brushPercent: 20,
+      detail: 16,
       active: null
     },
     render: {
@@ -130,8 +164,9 @@
     const map = {
       crop: 'Drag handles to crop. Pinch to zoom.',
       remove: 'Paint to remove. Release to apply. Pinch to zoom.',
-      filter: 'Choose a filter, adjust strength, and tap Apply.',
-      reshape: 'Pixel push: drag inward on edges to slim subjects.'
+      filter: 'Filters + color adjustments auto-apply as you drag.',
+      reshape: 'Pixel push: drag inward on edges to slim subjects.',
+      mosaic: 'Paint to apply mosaic instantly.'
     };
     setStatus(map[state.activeTool] || 'Edit your photo.');
   }
@@ -183,6 +218,8 @@
     state.undoRedo.filterRedo = [];
     state.undoRedo.reshapeUndo = [];
     state.undoRedo.reshapeRedo = [];
+    state.undoRedo.mosaicUndo = [];
+    state.undoRedo.mosaicRedo = [];
     state.crop.rect = null;
     state.crop.draftRect = null;
     state.remove.processing = false;
@@ -211,7 +248,8 @@
     tabRemove.classList.toggle('active', state.activeTool === 'remove');
     tabFilter.classList.toggle('active', state.activeTool === 'filter');
     tabReshape.classList.toggle('active', state.activeTool === 'reshape');
-    const titleMap = { crop: 'Editor • Crop', remove: 'Editor • Remove', filter: 'Editor • Filter', reshape: 'Editor • Reshape' };
+    tabMosaic.classList.toggle('active', state.activeTool === 'mosaic');
+    const titleMap = { crop: 'Editor • Crop', remove: 'Editor • Remove', filter: 'Editor • Filter', reshape: 'Editor • Reshape', mosaic: 'Editor • Mosaic' };
     topLabel.textContent = titleMap[state.activeTool] || 'Editor';
     if (state.workingImage) setHintForActiveTool();
     syncRemoveBusyGlow();
@@ -356,7 +394,7 @@
   }
 
   function continuePanWithRemainingPointer() {
-    if (!['crop', 'filter', 'reshape'].includes(state.activeTool)) return;
+    if (!['crop', 'filter', 'reshape', 'mosaic'].includes(state.activeTool)) return;
     if (state.crop.interaction) return;
     if (state.pointers.size !== 1) return;
     const point = Array.from(state.pointers.values())[0];
@@ -416,6 +454,8 @@
     filterRedoBtn.disabled = state.undoRedo.filterRedo.length === 0;
     reshapeUndoBtn.disabled = state.undoRedo.reshapeUndo.length === 0;
     reshapeRedoBtn.disabled = state.undoRedo.reshapeRedo.length === 0;
+    mosaicUndoBtn.disabled = state.undoRedo.mosaicUndo.length === 0;
+    mosaicRedoBtn.disabled = state.undoRedo.mosaicRedo.length === 0;
   }
 
   async function loadImage(file) {
@@ -433,6 +473,8 @@
     state.undoRedo.filterRedo = [];
     state.undoRedo.reshapeUndo = [];
     state.undoRedo.reshapeRedo = [];
+    state.undoRedo.mosaicUndo = [];
+    state.undoRedo.mosaicRedo = [];
     state.save.baseBytes = null;
     initCropRect();
     initMaskCanvas();
@@ -630,6 +672,8 @@
     state.undoRedo.filterRedo = [];
     state.undoRedo.reshapeUndo = [];
     state.undoRedo.reshapeRedo = [];
+    state.undoRedo.mosaicUndo = [];
+    state.undoRedo.mosaicRedo = [];
     state.workingImage = ImageCore.cropCanvas(state.workingImage, rect);
     state.save.baseBytes = null;
     state.ops.cropOp = {
@@ -661,6 +705,8 @@
     state.undoRedo.filterRedo = [];
     state.undoRedo.reshapeUndo = [];
     state.undoRedo.reshapeRedo = [];
+    state.undoRedo.mosaicUndo = [];
+    state.undoRedo.mosaicRedo = [];
     state.save.baseBytes = null;
     initCropRect();
     initMaskCanvas();
@@ -682,6 +728,8 @@
     state.undoRedo.filterRedo = [];
     state.undoRedo.reshapeUndo = [];
     state.undoRedo.reshapeRedo = [];
+    state.undoRedo.mosaicUndo = [];
+    state.undoRedo.mosaicRedo = [];
     state.save.baseBytes = null;
     initCropRect();
     initMaskCanvas();
@@ -774,16 +822,49 @@
     draw();
   }
 
-  function applyFilter() {
+  function applyFilterSuite() {
     if (!state.workingImage) return;
-    const preset = filterPreset.value;
-    if (preset === 'none') {
-      setStatus('Select a filter preset first.');
-      return;
-    }
-    const out = ImageCore.applyFilterPreset(state.workingImage, preset, state.filter.strength);
-    commitWorkingImage(out, 'filter');
-    showToast('Filter applied.');
+    const presetLayer = ImageCore.applyFilterPreset(state.workingImage, state.filter.preset, state.filter.strength);
+    const adjusted = ImageCore.applyColorAdjustments(presetLayer, {
+      highlight: state.filter.highlight,
+      contrast: state.filter.contrast,
+      warmth: state.filter.warmth,
+      saturation: state.filter.saturation
+    });
+    commitWorkingImage(adjusted, 'filter');
+  }
+
+  function applyFrame() {
+    if (!state.workingImage) return;
+    const out = ImageCore.addSolidFrame(state.workingImage, state.crop.frameColor, state.crop.frameSizePercent);
+    commitWorkingImage(out, 'crop');
+    showToast('Frame applied.');
+  }
+
+  function beginMosaicStroke(imagePoint) {
+    if (!state.workingImage) return;
+    state.undoRedo.mosaicUndo.push(ImageCore.cloneCanvas(state.workingImage));
+    state.undoRedo.mosaicRedo = [];
+    state.mosaic.active = { lastPoint: imagePoint };
+    refreshUndoButtons();
+  }
+
+  function updateMosaicStroke(imagePoint) {
+    if (!state.mosaic.active || !state.workingImage) return;
+    const basis = Math.min(state.workingImage.width, state.workingImage.height);
+    const radius = Math.max(8, (Number(state.mosaic.brushPercent) / 100) * basis * 0.24);
+    const detail = Math.max(4, Number(state.mosaic.detail) || 16);
+    state.workingImage = ImageCore.applyMosaicStroke(state.workingImage, imagePoint.x, imagePoint.y, radius, detail, state.mosaic.type);
+    state.mosaic.active.lastPoint = imagePoint;
+    state.save.baseBytes = null;
+    draw();
+  }
+
+  function endMosaicStroke() {
+    if (!state.mosaic.active) return;
+    state.mosaic.active = null;
+    showToast('Mosaic applied.');
+    refreshUndoButtons();
   }
 
   function undoStack(name) {
@@ -1179,6 +1260,9 @@
       if (!state.remove.processing) beginRemoveStroke(imagePoint);
     } else if (state.activeTool === 'reshape') {
       beginReshapeStroke(imagePoint);
+    } else if (state.activeTool === 'mosaic') {
+      beginMosaicStroke(imagePoint);
+      updateMosaicStroke(imagePoint);
     } else {
       state.pan = {
         startCanvas: point,
@@ -1229,6 +1313,8 @@
       updateRemoveStroke(getImagePointFromCanvas(point));
     } else if (state.activeTool === 'reshape' && state.reshape.active) {
       updateReshapeStroke(getImagePointFromCanvas(point));
+    } else if (state.activeTool === 'mosaic' && state.mosaic.active) {
+      updateMosaicStroke(getImagePointFromCanvas(point));
     } else if (state.pan) {
       state.viewport.offsetX = state.pan.startOffsetX + (point.x - state.pan.startCanvas.x);
       state.viewport.offsetY = state.pan.startOffsetY + (point.y - state.pan.startCanvas.y);
@@ -1260,6 +1346,10 @@
       draw();
     } else if (state.activeTool === 'reshape') {
       endReshapeStroke();
+      clampViewport({ hard: true });
+      draw();
+    } else if (state.activeTool === 'mosaic') {
+      endMosaicStroke();
       clampViewport({ hard: true });
       draw();
     } else {
@@ -1322,6 +1412,10 @@
     state.activeTool = 'reshape';
     updateToolPanes();
   });
+  tabMosaic.addEventListener('click', () => {
+    state.activeTool = 'mosaic';
+    updateToolPanes();
+  });
 
   function setCropAspectFromButton(btn, rotate) {
     if (!state.workingImage) return;
@@ -1365,6 +1459,14 @@
   cropApplyBtn.addEventListener('click', applyCrop);
   cropUndoBtn.addEventListener('click', undoCrop);
   cropRedoBtn.addEventListener('click', redoCrop);
+  frameSize.addEventListener('input', () => {
+    state.crop.frameSizePercent = Number(frameSize.value) || 0;
+    frameSizeText.textContent = state.crop.frameSizePercent + '%';
+  });
+  frameColor.addEventListener('input', () => {
+    state.crop.frameColor = frameColor.value;
+  });
+  frameApplyBtn.addEventListener('click', applyFrame);
 
   rotateCwBtn.addEventListener('click', () => rotateImage(90));
   rotateCcwBtn.addEventListener('click', () => rotateImage(-90));
@@ -1378,14 +1480,34 @@
     finalizeFineRotation();
   });
 
+  function queueFilterAutoApply() {
+    if (queueFilterAutoApply.timer) clearTimeout(queueFilterAutoApply.timer);
+    queueFilterAutoApply.timer = setTimeout(() => applyFilterSuite(), 80);
+  }
+  queueFilterAutoApply.timer = null;
+
   filterPreset.addEventListener('change', () => {
     state.filter.preset = filterPreset.value;
+    queueFilterAutoApply();
   });
   filterStrength.addEventListener('input', () => {
     state.filter.strength = Number(filterStrength.value) || 0;
     filterStrengthText.textContent = state.filter.strength + '%';
+    queueFilterAutoApply();
   });
-  filterApplyBtn.addEventListener('click', applyFilter);
+  const adjustmentInputs = [
+    [adjustHighlight, adjustHighlightText, 'highlight'],
+    [adjustContrast, adjustContrastText, 'contrast'],
+    [adjustWarmth, adjustWarmthText, 'warmth'],
+    [adjustSaturation, adjustSaturationText, 'saturation']
+  ];
+  adjustmentInputs.forEach(([input, text, key]) => {
+    input.addEventListener('input', () => {
+      state.filter[key] = Number(input.value) || 0;
+      text.textContent = state.filter[key] > 0 ? '+' + state.filter[key] : String(state.filter[key]);
+      queueFilterAutoApply();
+    });
+  });
   filterUndoBtn.addEventListener('click', () => undoStack('filter'));
   filterRedoBtn.addEventListener('click', () => redoStack('filter'));
 
@@ -1399,6 +1521,20 @@
   });
   reshapeUndoBtn.addEventListener('click', () => undoStack('reshape'));
   reshapeRedoBtn.addEventListener('click', () => redoStack('reshape'));
+
+  mosaicType.addEventListener('change', () => {
+    state.mosaic.type = mosaicType.value;
+  });
+  mosaicBrush.addEventListener('input', () => {
+    state.mosaic.brushPercent = Number(mosaicBrush.value) || 20;
+    mosaicBrushText.textContent = state.mosaic.brushPercent + '%';
+  });
+  mosaicDetail.addEventListener('input', () => {
+    state.mosaic.detail = Number(mosaicDetail.value) || 16;
+    mosaicDetailText.textContent = String(state.mosaic.detail);
+  });
+  mosaicUndoBtn.addEventListener('click', () => undoStack('mosaic'));
+  mosaicRedoBtn.addEventListener('click', () => redoStack('mosaic'));
 
   removeBrush.addEventListener('input', () => {
     state.remove.brushPercent = Number(removeBrush.value);
@@ -1480,6 +1616,22 @@
   reshapeBrushText.textContent = state.reshape.brushPercent + '%';
   reshapeStrength.value = String(state.reshape.strength);
   reshapeStrengthText.textContent = state.reshape.strength + '%';
+  frameSize.value = String(state.crop.frameSizePercent);
+  frameSizeText.textContent = state.crop.frameSizePercent + '%';
+  frameColor.value = state.crop.frameColor;
+  adjustHighlight.value = String(state.filter.highlight);
+  adjustHighlightText.textContent = '0';
+  adjustContrast.value = String(state.filter.contrast);
+  adjustContrastText.textContent = '0';
+  adjustWarmth.value = String(state.filter.warmth);
+  adjustWarmthText.textContent = '0';
+  adjustSaturation.value = String(state.filter.saturation);
+  adjustSaturationText.textContent = '0';
+  mosaicType.value = state.mosaic.type;
+  mosaicBrush.value = String(state.mosaic.brushPercent);
+  mosaicBrushText.textContent = state.mosaic.brushPercent + '%';
+  mosaicDetail.value = String(state.mosaic.detail);
+  mosaicDetailText.textContent = String(state.mosaic.detail);
   fineRotateValue.textContent = '0°';
   refreshUndoButtons();
 })();
