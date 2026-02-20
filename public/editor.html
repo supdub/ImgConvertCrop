@@ -369,7 +369,15 @@
       #fineRotateValue,
       #filterStrengthText,
       #reshapeBrushText,
-      #reshapeStrengthText {
+      #reshapeStrengthText,
+      #adjustHighlightText,
+      #adjustContrastText,
+      #adjustWarmthText,
+      #adjustSaturationText,
+      #adjustShadowsText,
+      #frameThicknessText,
+      #mosaicBrushText,
+      #mosaicStrengthText {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -396,7 +404,15 @@
       #fineRotateSlider,
       #filterStrength,
       #reshapeBrush,
-      #reshapeStrength {
+      #reshapeStrength,
+      #adjustHighlight,
+      #adjustContrast,
+      #adjustWarmth,
+      #adjustSaturation,
+      #adjustShadows,
+      #frameThickness,
+      #mosaicBrush,
+      #mosaicStrength {
         flex: 1;
         min-width: 0;
         padding: 0;
@@ -407,7 +423,15 @@
       #fineRotateSlider::-webkit-slider-runnable-track,
       #filterStrength::-webkit-slider-runnable-track,
       #reshapeBrush::-webkit-slider-runnable-track,
-      #reshapeStrength::-webkit-slider-runnable-track {
+      #reshapeStrength::-webkit-slider-runnable-track,
+      #adjustHighlight::-webkit-slider-runnable-track,
+      #adjustContrast::-webkit-slider-runnable-track,
+      #adjustWarmth::-webkit-slider-runnable-track,
+      #adjustSaturation::-webkit-slider-runnable-track,
+      #adjustShadows::-webkit-slider-runnable-track,
+      #frameThickness::-webkit-slider-runnable-track,
+      #mosaicBrush::-webkit-slider-runnable-track,
+      #mosaicStrength::-webkit-slider-runnable-track {
         height: 4px;
         border-radius: 999px;
         background: #d6dbe4;
@@ -416,7 +440,15 @@
       #fineRotateSlider::-webkit-slider-thumb,
       #filterStrength::-webkit-slider-thumb,
       #reshapeBrush::-webkit-slider-thumb,
-      #reshapeStrength::-webkit-slider-thumb {
+      #reshapeStrength::-webkit-slider-thumb,
+      #adjustHighlight::-webkit-slider-thumb,
+      #adjustContrast::-webkit-slider-thumb,
+      #adjustWarmth::-webkit-slider-thumb,
+      #adjustSaturation::-webkit-slider-thumb,
+      #adjustShadows::-webkit-slider-thumb,
+      #frameThickness::-webkit-slider-thumb,
+      #mosaicBrush::-webkit-slider-thumb,
+      #mosaicStrength::-webkit-slider-thumb {
         appearance: none;
         margin-top: -8px;
         width: 20px;
@@ -430,7 +462,15 @@
       #fineRotateSlider::-moz-range-track,
       #filterStrength::-moz-range-track,
       #reshapeBrush::-moz-range-track,
-      #reshapeStrength::-moz-range-track {
+      #reshapeStrength::-moz-range-track,
+      #adjustHighlight::-moz-range-track,
+      #adjustContrast::-moz-range-track,
+      #adjustWarmth::-moz-range-track,
+      #adjustSaturation::-moz-range-track,
+      #adjustShadows::-moz-range-track,
+      #frameThickness::-moz-range-track,
+      #mosaicBrush::-moz-range-track,
+      #mosaicStrength::-moz-range-track {
         height: 4px;
         border-radius: 999px;
         background: #d6dbe4;
@@ -477,7 +517,8 @@
         height: calc(var(--tabs-h) + env(safe-area-inset-bottom));
         border-top: 1px solid var(--separator);
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(7, minmax(80px, 1fr));
+        overflow-x: auto;
         padding: 4px 8px env(safe-area-inset-bottom);
         z-index: 50;
       }
@@ -950,13 +991,63 @@
             </select>
             <button id="filterUndoBtn" type="button" class="icon-btn" aria-label="Undo filter">↶</button>
             <button id="filterRedoBtn" type="button" class="icon-btn" aria-label="Redo filter">↷</button>
-            <button id="filterApplyBtn" type="button" class="action-btn primary">Apply</button>
+            
           </div>
           <div class="tool-row">
             <label for="filterStrength">Strength</label>
             <input id="filterStrength" type="range" min="0" max="100" step="1" value="100" />
             <span id="filterStrengthText">100%</span>
           </div>
+        </div>
+      </div>
+
+
+
+      <div class="tool-pane" data-tool="adjust">
+        <div class="tool-card glass">
+          <div class="tool-row"><label for="adjustHighlight">Highlight</label><input id="adjustHighlight" type="range" min="-100" max="100" step="1" value="0" /><span id="adjustHighlightText">0</span></div>
+          <div class="tool-row"><label for="adjustContrast">Contrast</label><input id="adjustContrast" type="range" min="-100" max="100" step="1" value="0" /><span id="adjustContrastText">0</span></div>
+          <div class="tool-row"><label for="adjustWarmth">Warmth</label><input id="adjustWarmth" type="range" min="-100" max="100" step="1" value="0" /><span id="adjustWarmthText">0</span></div>
+          <div class="tool-row"><label for="adjustSaturation">Saturation</label><input id="adjustSaturation" type="range" min="-100" max="100" step="1" value="0" /><span id="adjustSaturationText">0</span></div>
+          <div class="tool-row"><label for="adjustShadows">Shadows</label><input id="adjustShadows" type="range" min="-100" max="100" step="1" value="0" /><span id="adjustShadowsText">0</span></div>
+          <div class="tool-row">
+            <button id="adjustResetBtn" type="button" class="action-btn text">Reset</button>
+            <button id="adjustUndoBtn" type="button" class="icon-btn" aria-label="Undo adjust">↶</button>
+            <button id="adjustRedoBtn" type="button" class="icon-btn" aria-label="Redo adjust">↷</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-pane" data-tool="frame">
+        <div class="tool-card glass">
+          <div class="tool-row">
+            <label for="frameColor">Color</label>
+            <input id="frameColor" type="color" value="#ffffff" style="height:36px; width:54px; padding:2px" />
+            <label for="frameThickness">Size</label>
+            <input id="frameThickness" type="range" min="0" max="30" step="1" value="8" />
+            <span id="frameThicknessText">8%</span>
+          </div>
+          <div class="tool-row">
+            <button id="frameUndoBtn" type="button" class="icon-btn" aria-label="Undo frame">↶</button>
+            <button id="frameRedoBtn" type="button" class="icon-btn" aria-label="Redo frame">↷</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-pane" data-tool="mosaic">
+        <div class="tool-card glass">
+          <div class="tool-row">
+            <label for="mosaicType">Type</label>
+            <select id="mosaicType">
+              <option value="pixel" selected>Pixel</option>
+              <option value="hex">Hex</option>
+              <option value="blur">Blur</option>
+            </select>
+            <button id="mosaicUndoBtn" type="button" class="icon-btn" aria-label="Undo mosaic">↶</button>
+            <button id="mosaicRedoBtn" type="button" class="icon-btn" aria-label="Redo mosaic">↷</button>
+          </div>
+          <div class="tool-row"><label for="mosaicBrush">Brush</label><input id="mosaicBrush" type="range" min="5" max="60" step="1" value="24" /><span id="mosaicBrushText">24%</span></div>
+          <div class="tool-row"><label for="mosaicStrength">Intensity</label><input id="mosaicStrength" type="range" min="6" max="40" step="1" value="16" /><span id="mosaicStrengthText">16</span></div>
         </div>
       </div>
 
@@ -1018,6 +1109,18 @@
       <button type="button" id="tabFilter" data-tool="filter">
         <span class="tab-icon">◍</span>
         <span>Filter</span>
+      </button>
+      <button type="button" id="tabAdjust" data-tool="adjust">
+        <span class="tab-icon">☼</span>
+        <span>Adjust</span>
+      </button>
+      <button type="button" id="tabFrame" data-tool="frame">
+        <span class="tab-icon">▣</span>
+        <span>Frame</span>
+      </button>
+      <button type="button" id="tabMosaic" data-tool="mosaic">
+        <span class="tab-icon">▩</span>
+        <span>Mosaic</span>
       </button>
       <button type="button" id="tabReshape" data-tool="reshape">
         <span class="tab-icon">↔</span>

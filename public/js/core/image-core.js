@@ -195,6 +195,70 @@
     return out;
   };
 
+
+  ImageCore.applyColorAdjustments = function applyColorAdjustments(sourceCanvas, adjustments) {
+    const opts = adjustments || {};
+    const highlight = clamp(Number(opts.highlight) || 0, -100, 100) / 100;
+    const contrast = clamp(Number(opts.contrast) || 0, -100, 100) / 100;
+    const warmth = clamp(Number(opts.warmth) || 0, -100, 100) / 100;
+    const saturation = clamp(Number(opts.saturation) || 0, -100, 100) / 100;
+    const shadows = clamp(Number(opts.shadows) || 0, -100, 100) / 100;
+
+    const out = ImageCore.cloneCanvas(sourceCanvas);
+    const ctx = out.getContext('2d');
+    const img = ctx.getImageData(0, 0, out.width, out.height);
+    const d = img.data;
+    const contrastMul = 1 + contrast * 0.85;
+    const satMul = 1 + saturation * 0.9;
+
+    for (let i = 0; i < d.length; i += 4) {
+      let r = d[i];
+      let g = d[i + 1];
+      let b = d[i + 2];
+      const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      const hiMix = Math.max(0, (luma - 138) / 117);
+      const shMix = Math.max(0, (132 - luma) / 132);
+      const hiBoost = highlight * hiMix * 62;
+      const shBoost = shadows * shMix * 56;
+      r += hiBoost + shBoost;
+      g += hiBoost + shBoost;
+      b += hiBoost + shBoost;
+
+      r = (r - 128) * contrastMul + 128;
+      g = (g - 128) * contrastMul + 128;
+      b = (b - 128) * contrastMul + 128;
+
+      const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+      r = gray + (r - gray) * satMul;
+      g = gray + (g - gray) * satMul;
+      b = gray + (b - gray) * satMul;
+
+      const warmR = 36 * warmth;
+      const warmB = -30 * warmth;
+      r += warmR;
+      b += warmB;
+      g += 8 * warmth;
+
+      d[i] = clamp(Math.round(r), 0, 255);
+      d[i + 1] = clamp(Math.round(g), 0, 255);
+      d[i + 2] = clamp(Math.round(b), 0, 255);
+    }
+    ctx.putImageData(img, 0, 0);
+    return out;
+  };
+
+  ImageCore.addSolidFrame = function addSolidFrame(sourceCanvas, colorHex, thicknessPercent) {
+    const pct = clamp(Number(thicknessPercent) || 0, 0, 30) / 100;
+    if (pct <= 0.0001) return ImageCore.cloneCanvas(sourceCanvas);
+    const border = Math.max(1, Math.round(Math.min(sourceCanvas.width, sourceCanvas.height) * pct));
+    const out = ImageCore.createCanvas(sourceCanvas.width + border * 2, sourceCanvas.height + border * 2);
+    const ctx = out.getContext('2d');
+    ctx.fillStyle = colorHex || '#ffffff';
+    ctx.fillRect(0, 0, out.width, out.height);
+    ctx.drawImage(sourceCanvas, border, border);
+    return out;
+  };
+
   ImageCore.pushPixels = function pushPixels(sourceCanvas, centerX, centerY, deltaX, deltaY, radius, strength) {
     const out = ImageCore.cloneCanvas(sourceCanvas);
     const w = out.width;
